@@ -11,7 +11,8 @@
          active=full opacity + primary tint, inactive=dimmed -->
     <ControlTemplate x:Key="ToolbarIconButtonTemplate" TargetType="ButtonBase">
         <Border x:Name="Bd" Background="Transparent" CornerRadius="4">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
@@ -29,10 +30,15 @@
         <Setter Property="Width" Value="28"/>
         <Setter Property="Height" Value="28"/>
         <Setter Property="Margin" Value="2,0"/>
+        <Setter Property="Foreground" Value="#888"/>
         <Setter Property="Opacity" Value="0.4"/>
         <Style.Triggers>
             <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Foreground" Value="#CCCCCC"/>
                 <Setter Property="Opacity" Value="1"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="#CCCCCC"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -42,7 +48,7 @@
         <Setter Property="Width" Value="28"/>
         <Setter Property="Height" Value="28"/>
         <Setter Property="Margin" Value="2,0"/>
-        <Setter Property="Opacity" Value="1"/>
+        <Setter Property="Foreground" Value="#CCCCCC"/>
     </Style>
 
     <!-- Compact MD raised button: sleek with ripple + shadow -->
