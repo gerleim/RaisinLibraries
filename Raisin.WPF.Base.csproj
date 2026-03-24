@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageReference Include="Raisin.AvalonDock" Version="4.72.1" />
+    <ProjectReference Include="..\Raisin.Core\Raisin.Core.csproj" />
     <PackageReference Include="Raisin.EventSystem" Version="1.0.0" />
   </ItemGroup>
 

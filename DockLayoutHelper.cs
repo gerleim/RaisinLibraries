@@ -1,5 +1,6 @@
 using System.IO;
 using AvalonDock;
+using Raisin.Core;
 using AvalonDock.Layout.Serialization;
 
 namespace Raisin.WPF.Base;
