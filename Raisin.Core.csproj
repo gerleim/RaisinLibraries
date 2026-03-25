@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>Raisin.Core</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>gerleim</Authors>
     <Description>Shared core utilities — file logging, atomic writes, credential protection, process watching</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -23,7 +23,7 @@
     <ProjectReference Include="..\Raisin.EventSystem\Raisin.EventSystem.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
-    <PackageReference Include="Raisin.EventSystem" Version="1.0.0" />
+    <PackageReference Include="Raisin.EventSystem" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
