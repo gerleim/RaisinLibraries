@@ -14,7 +14,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/gerleim/Raisin.WPF.Base</RepositoryUrl>
     <PackageProjectUrl>https://github.com/gerleim/Raisin.WPF.Base</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="RaisinTerminal" />
@@ -23,7 +28,13 @@
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageReference Include="Raisin.AvalonDock" Version="4.72.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseProjectReferences)' != 'false'">
     <ProjectReference Include="..\Raisin.Core\Raisin.Core.csproj" />
+    <ProjectReference Include="..\Raisin.EventSystem\Raisin.EventSystem.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+    <PackageReference Include="Raisin.Core" Version="1.0.0" />
     <PackageReference Include="Raisin.EventSystem" Version="1.0.0" />
   </ItemGroup>
 
