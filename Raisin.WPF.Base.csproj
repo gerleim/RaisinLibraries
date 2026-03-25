@@ -34,8 +34,8 @@
     <ProjectReference Include="..\Raisin.EventSystem\Raisin.EventSystem.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
-    <PackageReference Include="Raisin.Core" Version="1.0.0" />
-    <PackageReference Include="Raisin.EventSystem" Version="1.0.0" />
+    <PackageReference Include="Raisin.Core" Version="1.0.1" />
+    <PackageReference Include="Raisin.EventSystem" Version="1.0.1" />
   </ItemGroup>
 
 </Project>
