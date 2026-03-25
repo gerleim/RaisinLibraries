@@ -10,10 +10,20 @@
     <Authors>gerleim</Authors>
     <Description>Shared core utilities — file logging, atomic writes, credential protection, process watching</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/gerleim/Raisin.Core</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gerleim/Raisin.Core</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseProjectReferences)' != 'false'">
     <ProjectReference Include="..\Raisin.EventSystem\Raisin.EventSystem.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+    <PackageReference Include="Raisin.EventSystem" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
