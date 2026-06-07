@@ -37,7 +37,7 @@ public static class GridSettingsService
                 _cache = JsonSerializer.Deserialize<Dictionary<string, GridState>>(json, JsonOptions);
             }
         }
-        catch (Exception ex) { es?.Log(typeof(GridSettingsService), $"Load error: {ex.Message}", MessageSeverity.Warning); }
+        catch (Exception ex) { es?.Log(typeof(GridSettingsService), $"Load error: {ex.Message}", LogTarget.File, LogSeverity.Warning); }
 
         _cache ??= [];
         return _cache;
@@ -92,7 +92,7 @@ public static class GridSettingsService
             var json = JsonSerializer.Serialize(data, JsonOptions);
             SafeFile.WriteAllText(FilePath, json);
         }
-        catch (Exception ex) { es?.Log(typeof(GridSettingsService), $"Save error: {ex.Message}", MessageSeverity.Warning); }
+        catch (Exception ex) { es?.Log(typeof(GridSettingsService), $"Save error: {ex.Message}", LogTarget.File, LogSeverity.Warning); }
     }
 }
 
