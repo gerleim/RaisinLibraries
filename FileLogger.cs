@@ -3,7 +3,9 @@ using Raisin.EventSystem;
 
 namespace Raisin.Core;
 
+#pragma warning disable CS0618 // MessageArgs kept for backwards compatibility
 public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArgs>, IDisposable
+#pragma warning restore CS0618
 {
     private readonly string _logDirectory;
     private readonly string _baseName;
@@ -53,13 +55,15 @@ public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArg
         catch (IOException) { }
     }
 
+#pragma warning disable CS0618 // MessageArgs kept for backwards compatibility
     public void ExecuteEvent(object sender, MessageArgs eventArgs)
-        => WriteLine(eventArgs.Severity, eventArgs.Message, sender?.GetType().Name);
+        => WriteLine((LogSeverity)eventArgs.Severity, eventArgs.Message, sender?.GetType().Name);
+#pragma warning restore CS0618
 
     public void ExecuteEvent(object sender, LogArgs eventArgs)
-        => WriteLine(eventArgs.Severity, eventArgs.Message, sender?.GetType().Name);
+        => WriteLine(eventArgs.LogSeverity, eventArgs.Message, sender?.GetType().Name);
 
-    private void WriteLine(MessageSeverity severity, string message, string? source = null)
+    private void WriteLine(LogSeverity severity, string message, string? source = null)
     {
         try
         {

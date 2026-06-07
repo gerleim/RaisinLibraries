@@ -33,6 +33,13 @@ public static class AppPaths
         AppPaths.layoutFileName = layoutFileName;
     }
 
+    /// <summary>
+    /// Override DataDir to a specific path. Used by services that need to read
+    /// a user's config when running under a different account (e.g., SYSTEM).
+    /// Call after Configure, before Options.Load.
+    /// </summary>
+    public static void OverrideDataDir(string path) => DataDir = path;
+
     public static void SetPortable(bool portable) =>
         DataDir = portable ? AppDir : AppDataDir;
 
@@ -61,17 +68,17 @@ public static class AppPaths
             if (File.Exists(src))
             {
                 File.Copy(src, dst, overwrite: true);
-                es?.Invoke(typeof(AppPaths), new MessageArgs($"Migrated {file}: {oldDir} → {newDir}") { Severity = MessageSeverity.Verbose });
+                es?.Invoke(typeof(AppPaths), new LogArgs($"Migrated {file}: {oldDir} → {newDir}") { LogSeverity = LogSeverity.Verbose, Target = LogTarget.UI });
                 try { File.Delete(src); }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    es?.Invoke(typeof(AppPaths), new MessageArgs($"Could not delete old settings file {file}: {ex.Message}")
-                        { Severity = MessageSeverity.Verbose });
+                    es?.Invoke(typeof(AppPaths), new LogArgs($"Could not delete old settings file {file}: {ex.Message}")
+                        { LogSeverity = LogSeverity.Verbose, Target = LogTarget.UI });
                 }
             }
         }
 
         DataDir = newDir;
-        es?.Invoke(typeof(AppPaths), new MessageArgs($"Settings storage changed to {newDir}"));
+        es?.Invoke(typeof(AppPaths), new LogArgs($"Settings storage changed to {newDir}") { Target = LogTarget.UI });
     }
 }
