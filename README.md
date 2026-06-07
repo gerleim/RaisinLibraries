@@ -26,20 +26,22 @@ dotnet add package Raisin.EventSystem
 var events = new EventSystem();
 
 // Subscribe
-events.Subscribe(mySubscriber); // implements IEventSubscriber<MessageArgs>
+events.Subscribe(mySubscriber); // implements IEventSubscriber<LogArgs>
 
-// Publish
-events.Message(this, "Something happened", MessageSeverity.Info, "Category");
+// Publish — LogTarget controls where the entry goes
+events.Log(this, "Connected to server", LogTarget.UI);              // UI + file
+events.Log(this, "Socket buffer: 4096", LogTarget.File);            // file only
+events.Log(this, "Retrying...", LogTarget.UI, LogSeverity.Warning); // with severity
 ```
 
 ### Implementing a subscriber
 
 ```csharp
-public class MyService : IEventSubscriber<MessageArgs>
+public class MyService : IEventSubscriber<LogArgs>
 {
-    public void ExecuteEvent(object sender, MessageArgs e)
+    public void ExecuteEvent(object sender, LogArgs e)
     {
-        Console.WriteLine($"[{e.Severity}] {e.Message}");
+        Console.WriteLine($"[{e.LogSeverity}] {e.Message}");
     }
 
     public void DestroySubscriber() { /* cleanup */ }
@@ -59,18 +61,21 @@ events.DestroyAll(myService);
 ### Filtered subscription
 
 ```csharp
-events.Subscribe(mySubscriber, filter: e => e.Severity >= MessageSeverity.Warning);
+events.Subscribe(mySubscriber, filter: e => e.LogSeverity >= LogSeverity.Warning);
 ```
 
 ## Built-in event types
 
 | Type | Fields | Purpose |
 |------|--------|---------|
-| `MessageArgs` | Message, Severity, Category, Subcategory | General application messages |
-| `LogArgs` | Message, Severity, Category, Subcategory | File/diagnostic logging |
+| `LogArgs` | Message, LogSeverity, Target, Category, Subcategory | Unified logging (UI and/or file) |
 | `AlertArgs` | Type, Message, Symbol, Category | System and domain alerts |
 
-Severity levels: `Detail`, `Verbose`, `Info`, `Warning`, `Error`, `Critical`
+`LogTarget`: `File` (file only), `UI` (UI + file)
+
+`LogSeverity`: `Detail`, `Verbose`, `Info`, `Warning`, `Error`, `Critical`
+
+> `MessageArgs` and `MessageSeverity` are deprecated — use `LogArgs` with `LogTarget.UI` instead.
 
 ## License
 

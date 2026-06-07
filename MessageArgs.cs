@@ -1,5 +1,6 @@
 namespace Raisin.EventSystem;
 
+[Obsolete("Use LogArgs with LogTarget.UI instead")]
 public class MessageArgs(string message) : EventSystemEventArgs
 {
     public string Message { get; set; } = message;
@@ -8,6 +9,7 @@ public class MessageArgs(string message) : EventSystemEventArgs
     public string? Subcategory { get; set; }
 }
 
+[Obsolete("Use LogSeverity instead")]
 public enum MessageSeverity
 {
     Detail,
