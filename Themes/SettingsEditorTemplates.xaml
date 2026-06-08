@@ -18,13 +18,21 @@
         </Style.Triggers>
     </Style>
 
-    <!-- Compact reset button style -->
+    <!-- Compact reset button style — always visible, dimmed when at default -->
     <Style x:Key="SettingsResetButton" TargetType="Button">
         <Setter Property="Content" Value="Reset"/>
         <Setter Property="Padding" Value="6,2"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Margin" Value="4,0,0,0"/>
+        <Setter Property="Opacity" Value="0.25"/>
+        <Setter Property="IsEnabled" Value="False"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsModified}" Value="True">
+                <Setter Property="Opacity" Value="1.0"/>
+                <Setter Property="IsEnabled" Value="True"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <!-- Category Header -->
@@ -37,7 +45,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -58,7 +65,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -82,7 +88,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -106,7 +111,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -129,7 +133,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -152,7 +155,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -176,7 +178,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -199,7 +200,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <StackPanel>
                     <DockPanel>
@@ -227,7 +227,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -269,7 +268,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -313,7 +311,6 @@
         <Border Style="{StaticResource SettingRowBorder}">
             <DockPanel>
                 <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
-                        Visibility="{Binding IsModified, Converter={StaticResource SettingsBoolToVis}}"
                         Command="{Binding ResetCommand}"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
