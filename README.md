@@ -31,7 +31,7 @@ SafeFile.WriteAllText("config.json", jsonString);
 var events = new EventSystem();
 var logger = new FileLogger(events, "logs/myapp.log", retentionDays: 30);
 
-events.Log(this, "Application started", MessageSeverity.Info);
+events.Log(this, "Application started", LogTarget.File, LogSeverity.Info);
 ```
 
 ### Credential protection (Windows)
