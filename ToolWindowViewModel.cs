@@ -42,6 +42,13 @@ public abstract class ToolWindowViewModel : ViewModelBase
         set => SetProperty(ref _isNew, value);
     }
 
+    private bool _isMaximizedOverlay;
+    public bool IsMaximizedOverlay
+    {
+        get => _isMaximizedOverlay;
+        set => SetProperty(ref _isMaximizedOverlay, value);
+    }
+
     /// <summary>Called to remove this VM from its parent collection and close the tab.</summary>
     public Action? CloseAction { get; set; }
 
