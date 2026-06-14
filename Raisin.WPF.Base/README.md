@@ -74,8 +74,8 @@ protected override void OnSourceInitialized(EventArgs e)
 
 ## Dependencies
 
-- [Raisin.Core](https://www.nuget.org/packages/Raisin.Core) — atomic file I/O, app paths
-- [Raisin.EventSystem](https://www.nuget.org/packages/Raisin.EventSystem) — event bus
+- [Raisin.Core](../Raisin.Core/) — atomic file I/O, app paths
+- [Raisin.EventSystem](../Raisin.EventSystem/) — event bus
 - [Raisin.AvalonDock](https://www.nuget.org/packages/Raisin.AvalonDock) — docking framework
 - [MaterialDesignThemes](https://www.nuget.org/packages/MaterialDesignThemes) — Material Design resources
 

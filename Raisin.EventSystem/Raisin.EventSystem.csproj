@@ -10,8 +10,8 @@
     <Authors>gerleim</Authors>
     <Description>Lightweight event bus for .NET applications</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/gerleim/Raisin.EventSystem</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/gerleim/Raisin.EventSystem</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gerleim/RaisinLibraries</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gerleim/RaisinLibraries</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="Raisin.EventSystem/Raisin.EventSystem.csproj" />
+  <Project Path="Raisin.Core/Raisin.Core.csproj" />
+  <Project Path="Raisin.App.Base/Raisin.App.Base.csproj" />
+  <Project Path="Raisin.WPF.Base/Raisin.WPF.Base.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Raisin.EventSystem.Tests/Raisin.EventSystem.Tests.csproj" />
+    <Project Path="Tests/Raisin.App.Base.Tests/Raisin.App.Base.Tests.csproj" />
+  </Folder>
+</Solution>

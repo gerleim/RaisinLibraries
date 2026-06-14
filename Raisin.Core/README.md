@@ -52,7 +52,7 @@ string dataDir = AppPaths.DataDir;    // current data directory
 
 ## Dependencies
 
-- [Raisin.EventSystem](https://www.nuget.org/packages/Raisin.EventSystem) — event bus for logging integration
+- [Raisin.EventSystem](../Raisin.EventSystem/) — event bus for logging integration
 - [System.Security.Cryptography.ProtectedData](https://www.nuget.org/packages/System.Security.Cryptography.ProtectedData) — Windows DPAPI
 
 ## License

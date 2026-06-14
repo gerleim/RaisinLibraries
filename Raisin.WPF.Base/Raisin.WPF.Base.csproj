@@ -12,8 +12,8 @@
     <Authors>gerleim</Authors>
     <Description>Shared WPF base library — ViewModelBase, layout helpers, window placement, dark theme utilities</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/gerleim/Raisin.WPF.Base</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/gerleim/Raisin.WPF.Base</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gerleim/RaisinLibraries</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gerleim/RaisinLibraries</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

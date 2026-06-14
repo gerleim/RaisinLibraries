@@ -10,8 +10,8 @@
     <Authors>gerleim</Authors>
     <Description>Shared core utilities — file logging, atomic writes, credential protection, process watching</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/gerleim/Raisin.Core</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/gerleim/Raisin.Core</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gerleim/RaisinLibraries</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gerleim/RaisinLibraries</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
