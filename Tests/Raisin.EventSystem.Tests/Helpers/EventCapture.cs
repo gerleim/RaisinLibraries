@@ -1,6 +1,6 @@
 using Raisin.EventSystem;
 
-namespace Raisin.Tests.Helpers;
+namespace Raisin.EventSystem.Tests.Helpers;
 
 public class EventCapture<T> : IEventSubscriber<T> where T : EventSystemEventArgs
 {

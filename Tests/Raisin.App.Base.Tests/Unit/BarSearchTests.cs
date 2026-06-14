@@ -2,7 +2,7 @@ using FluentAssertions;
 using Raisin.App.Base;
 using Xunit;
 
-namespace Raisin.Tests.Unit;
+namespace Raisin.App.Base.Tests.Unit;
 
 [Trait("Category", "Unit")]
 public class BarSearchTests

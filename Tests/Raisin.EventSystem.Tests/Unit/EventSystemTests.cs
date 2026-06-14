@@ -1,14 +1,14 @@
 using FluentAssertions;
 using Raisin.EventSystem;
-using Raisin.Tests.Helpers;
+using Raisin.EventSystem.Tests.Helpers;
 using Xunit;
 
-namespace Raisin.Tests.Unit;
+namespace Raisin.EventSystem.Tests.Unit;
 
 [Trait("Category", "Unit")]
 public class EventSystemTests : IDisposable
 {
-    private readonly Raisin.EventSystem.EventSystem _es = new();
+    private readonly EventSystem _es = new();
 
     public void Dispose() => _es.Dispose();
 

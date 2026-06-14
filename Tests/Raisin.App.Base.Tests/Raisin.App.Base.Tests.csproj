@@ -13,7 +13,6 @@
     <PackageReference Include="FluentAssertions" Version="7.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Raisin.EventSystem\Raisin.EventSystem.csproj" />
-    <ProjectReference Include="..\Raisin.App.Base\Raisin.App.Base.csproj" />
+    <ProjectReference Include="..\..\Raisin.App.Base\Raisin.App.Base.csproj" />
   </ItemGroup>
 </Project>
