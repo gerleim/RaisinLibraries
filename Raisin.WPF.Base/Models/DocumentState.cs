@@ -12,11 +12,4 @@ public class DocumentState
     public double FloatingTop { get; set; }
     public double FloatingWidth { get; set; }
     public double FloatingHeight { get; set; }
-
-    // Terminal session state
-    public string WorkingDirectory { get; set; } = "";
-    public string LastCommand { get; set; } = "";
-    public bool WasInAlternateScreen { get; set; }
-    public bool IsCommandRunning { get; set; }
-    public string? ClaudeSessionName { get; set; }
 }
