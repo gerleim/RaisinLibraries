@@ -59,7 +59,7 @@ public abstract class LayoutManagerBase : IManagedPaths
         }
     }
 
-    public static void RestoreWindowPlacement(Window window, IWindowPlacementState state)
+    public static void RestoreWindowPlacement(Window window, AppLayoutState state)
     {
         var p = WindowPlacementHelper.FromNullable(
             state.WindowLeft, state.WindowTop, state.WindowWidth, state.WindowHeight, state.WindowMaximized);
@@ -92,7 +92,7 @@ public abstract class LayoutManagerBase : IManagedPaths
         catch { }
     }
 
-    protected abstract IWindowPlacementState CaptureState(WindowPlacement wp);
+    protected abstract AppLayoutState CaptureState(WindowPlacement wp);
 
     // --- Restore helpers ---
 
