@@ -2,7 +2,7 @@ namespace Raisin.WPF.Base.Models;
 
 public record FloatingWindowBounds(double Left, double Top, double Width, double Height);
 
-public class AppLayoutState
+public class AppLayoutState : Raisin.WPF.Base.IWindowPlacementState
 {
     public int Version { get; set; } = 1;
     public List<DocumentState> Documents { get; set; } = [];
