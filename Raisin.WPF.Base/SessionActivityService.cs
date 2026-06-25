@@ -40,6 +40,9 @@ public class SessionActivityService
         _powerNotifyHandle = NativeMethods.RegisterPowerSettingNotification(
             hwnd, ref guid, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
 
+        _focusDebounce = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _focusDebounce.Tick += OnFocusDebounceElapsed;
+
         _idleTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
         _idleTimer.Tick += OnIdleTimerTick;
         _idleTimer.Start();
@@ -87,15 +90,12 @@ public class SessionActivityService
     private void OnDeactivated(object? sender, EventArgs e)
     {
         _deactivatedAtUtc = DateTime.UtcNow;
-        _focusDebounce ??= new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _focusDebounce.Tick += OnFocusDebounceElapsed;
-        _focusDebounce.Start();
+        _focusDebounce!.Start();
     }
 
     private void OnFocusDebounceElapsed(object? sender, EventArgs e)
     {
         _focusDebounce!.Stop();
-        _focusDebounce.Tick -= OnFocusDebounceElapsed;
 
         if (IsForegroundWindowOurs())
             return;
