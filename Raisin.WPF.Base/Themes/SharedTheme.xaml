@@ -85,18 +85,61 @@
         <Setter Property="Padding" Value="4,2"/>
     </Style>
 
-    <!-- Compact filter ComboBox: slim height, tight item padding -->
+    <!-- Compact filter ComboBox: MD underline focus animation, dark background, menu-like item spacing -->
     <Style x:Key="FilterComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
         <Setter Property="Height" Value="22"/>
         <Setter Property="MinHeight" Value="0"/>
         <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="Background" Value="#2D2D30"/>
+        <Setter Property="BorderBrush" Value="#3F3F46"/>
         <Setter Property="Padding" Value="6,2,6,2"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
-                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                    <Setter Property="Padding" Value="6,2"/>
+                <Style TargetType="ComboBoxItem">
                     <Setter Property="MinHeight" Value="0"/>
+                    <Setter Property="Foreground" Value="#CCCCCC"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ComboBoxItem">
+                                <Border x:Name="Bd" Padding="6,6,8,6"
+                                        BorderThickness="2,0,0,0" BorderBrush="Transparent"
+                                        SnapsToDevicePixels="True">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="#3E3E42" Opacity="0"/>
+                                    </Border.Background>
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsHighlighted" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bd"
+                                                        Storyboard.TargetProperty="Background.Opacity"
+                                                        To="1" Duration="0:0:0.12"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bd"
+                                                        Storyboard.TargetProperty="Background.Opacity"
+                                                        To="0" Duration="0:0:0.3"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Bd" Property="BorderBrush" Value="#007ACC"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </Setter.Value>
         </Setter>
