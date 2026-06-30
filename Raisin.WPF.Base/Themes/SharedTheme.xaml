@@ -161,24 +161,25 @@
                                       ClickMode="Press">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
-                                    <Border x:Name="Bd" Background="#3C3C3C" BorderBrush="#555555"
+                                    <Border x:Name="Bd" Background="{Binding ToggleBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                                            BorderBrush="{Binding ToggleBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
                                             BorderThickness="1" CornerRadius="2" SnapsToDevicePixels="True"
                                             Padding="6,0,20,0">
                                         <TextBlock Text="{Binding SummaryText, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
-                                                   VerticalAlignment="Center" Foreground="#CCCCCC" TextTrimming="CharacterEllipsis"/>
+                                                   VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}" TextTrimming="CharacterEllipsis"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#777777"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{Binding HoverBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
                                         </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#007ACC"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{Binding AccentBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </ToggleButton.Template>
                         </ToggleButton>
-                        <Path Data="M0,0 L4,4 8,0" Stroke="#999999" StrokeThickness="1.5"
+                        <Path Data="M0,0 L4,4 8,0" Stroke="{TemplateBinding ChevronBrush}" StrokeThickness="1.5"
                               HorizontalAlignment="Right" VerticalAlignment="Center"
                               Margin="0,0,6,0" IsHitTestVisible="False"/>
                         <Popup x:Name="PART_Popup"
@@ -186,14 +187,16 @@
                                Placement="Bottom" AllowsTransparency="True" StaysOpen="True"
                                Focusable="False" PopupAnimation="None"
                                MinWidth="{Binding ActualWidth, ElementName=PART_ToggleButton}">
-                            <Border Background="#2D2D30" BorderBrush="#555555" BorderThickness="1"
-                                    MaxHeight="300" Margin="0,1,0,0">
+                            <Border Background="{Binding PopupBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                                    BorderBrush="{Binding PopupBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                                    BorderThickness="1" MaxHeight="300" Margin="0,1,0,0">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <ItemsControl x:Name="PART_ItemsList"
                                                   ItemsSource="{TemplateBinding ItemsSource}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border x:Name="ItemBorder" Background="Transparent" Padding="6,3">
+                                                <Border x:Name="ItemBorder" Background="Transparent"
+                                                        Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                                                   VerticalAlignment="Center" Margin="0,0,6,0"
@@ -204,7 +207,8 @@
                                                 </Border>
                                                 <DataTemplate.Triggers>
                                                     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#3E3E42"/>
+                                                        <Setter TargetName="ItemBorder" Property="Background"
+                                                                Value="{Binding ItemHoverBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
                                                     </DataTrigger>
                                                 </DataTemplate.Triggers>
                                             </DataTemplate>

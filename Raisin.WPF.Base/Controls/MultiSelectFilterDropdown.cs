@@ -30,6 +30,42 @@ public class MultiSelectFilterDropdown : Control
         DependencyProperty.Register(nameof(SummaryText), typeof(string), typeof(MultiSelectFilterDropdown),
             new PropertyMetadata("All"));
 
+    public static readonly DependencyProperty ToggleBackgroundProperty =
+        DependencyProperty.Register(nameof(ToggleBackground), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x3C, 0x3C, 0x3C))));
+
+    public static readonly DependencyProperty ToggleBorderBrushProperty =
+        DependencyProperty.Register(nameof(ToggleBorderBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55))));
+
+    public static readonly DependencyProperty HoverBorderBrushProperty =
+        DependencyProperty.Register(nameof(HoverBorderBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x77, 0x77, 0x77))));
+
+    public static readonly DependencyProperty AccentBrushProperty =
+        DependencyProperty.Register(nameof(AccentBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x00, 0x7A, 0xCC))));
+
+    public static readonly DependencyProperty PopupBackgroundProperty =
+        DependencyProperty.Register(nameof(PopupBackground), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x2D, 0x2D, 0x30))));
+
+    public static readonly DependencyProperty PopupBorderBrushProperty =
+        DependencyProperty.Register(nameof(PopupBorderBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55))));
+
+    public static readonly DependencyProperty ItemHoverBackgroundProperty =
+        DependencyProperty.Register(nameof(ItemHoverBackground), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x3E, 0x3E, 0x42))));
+
+    public static readonly DependencyProperty ChevronBrushProperty =
+        DependencyProperty.Register(nameof(ChevronBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99))));
+
+    public static readonly DependencyProperty ItemPaddingProperty =
+        DependencyProperty.Register(nameof(ItemPadding), typeof(Thickness), typeof(MultiSelectFilterDropdown),
+            new PropertyMetadata(new Thickness(6, 3, 6, 3)));
+
     public IEnumerable? ItemsSource
     {
         get => (IEnumerable?)GetValue(ItemsSourceProperty);
@@ -52,6 +88,60 @@ public class MultiSelectFilterDropdown : Control
     {
         get => (string)GetValue(SummaryTextProperty);
         set => SetValue(SummaryTextProperty, value);
+    }
+
+    public Brush ToggleBackground
+    {
+        get => (Brush)GetValue(ToggleBackgroundProperty);
+        set => SetValue(ToggleBackgroundProperty, value);
+    }
+
+    public Brush ToggleBorderBrush
+    {
+        get => (Brush)GetValue(ToggleBorderBrushProperty);
+        set => SetValue(ToggleBorderBrushProperty, value);
+    }
+
+    public Brush HoverBorderBrush
+    {
+        get => (Brush)GetValue(HoverBorderBrushProperty);
+        set => SetValue(HoverBorderBrushProperty, value);
+    }
+
+    public Brush AccentBrush
+    {
+        get => (Brush)GetValue(AccentBrushProperty);
+        set => SetValue(AccentBrushProperty, value);
+    }
+
+    public Brush PopupBackground
+    {
+        get => (Brush)GetValue(PopupBackgroundProperty);
+        set => SetValue(PopupBackgroundProperty, value);
+    }
+
+    public Brush PopupBorderBrush
+    {
+        get => (Brush)GetValue(PopupBorderBrushProperty);
+        set => SetValue(PopupBorderBrushProperty, value);
+    }
+
+    public Brush ItemHoverBackground
+    {
+        get => (Brush)GetValue(ItemHoverBackgroundProperty);
+        set => SetValue(ItemHoverBackgroundProperty, value);
+    }
+
+    public Brush ChevronBrush
+    {
+        get => (Brush)GetValue(ChevronBrushProperty);
+        set => SetValue(ChevronBrushProperty, value);
+    }
+
+    public Thickness ItemPadding
+    {
+        get => (Thickness)GetValue(ItemPaddingProperty);
+        set => SetValue(ItemPaddingProperty, value);
     }
 
     public event EventHandler? SelectionChanged;
