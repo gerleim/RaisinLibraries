@@ -2,16 +2,148 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Style Inspector"
-        Width="800" Height="600"
+        Width="700" Height="600"
         WindowStartupLocation="CenterOwner"
         Topmost="True"
         Background="#FF1E1E1E"
         Foreground="#FFCCCCCC">
-    <Grid Margin="8">
-        <TextBlock Text="Style Inspector — Phase 1 coming soon"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="16"
-                   Foreground="#FF888888"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="6,4">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="PickButton" Click="OnPickClick"
+                        Padding="4,3" Margin="0,0,8,0" ToolTip="Pick an element to inspect"
+                        Foreground="#FFCCCCCC" Background="#FF3E3E42" BorderBrush="#FF555555">
+                    <Viewbox Width="18" Height="18">
+                        <Canvas Width="16" Height="16">
+                            <Ellipse Canvas.Left="3" Canvas.Top="3" Width="10" Height="10"
+                                     Stroke="#FFCCCCCC" StrokeThickness="1.4" Fill="Transparent"/>
+                            <Line X1="8" Y1="0" X2="8" Y2="4" Stroke="#FFCCCCCC" StrokeThickness="1.4"/>
+                            <Line X1="8" Y1="12" X2="8" Y2="16" Stroke="#FFCCCCCC" StrokeThickness="1.4"/>
+                            <Line X1="0" Y1="8" X2="4" Y2="8" Stroke="#FFCCCCCC" StrokeThickness="1.4"/>
+                            <Line X1="12" Y1="8" X2="16" Y2="8" Stroke="#FFCCCCCC" StrokeThickness="1.4"/>
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+                <TextBox x:Name="SearchBox" Width="200"
+                         Background="#FF3E3E42" Foreground="#FFCCCCCC" BorderBrush="#FF555555"
+                         Padding="4,2" VerticalContentAlignment="Center"
+                         TextChanged="OnFilterChanged"/>
+                <CheckBox x:Name="HideDefaultsBox" Content="Hide defaults"
+                          Foreground="#FFAAAAAA" Margin="12,0,0,0"
+                          VerticalAlignment="Center"
+                          Checked="OnFilterChanged" Unchecked="OnFilterChanged"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Element info -->
+        <Border x:Name="ElementInfoPanel" Grid.Row="1" Background="#FF252526"
+                BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
+                Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock x:Name="ElementType" FontSize="13" Foreground="#FF9CDCFE"/>
+                <TextBlock x:Name="ElementDetail" FontSize="11" Foreground="#FF666666" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Property list -->
+        <ListBox Grid.Row="2" x:Name="PropertyList"
+                 Background="#FF1E1E1E" BorderThickness="0"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Grid.IsSharedSizeScope="True"
+                 VirtualizingPanel.IsVirtualizing="False">
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="8,2"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border x:Name="Bd" Background="Transparent"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="#FF264F78"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="#FF2A2D2E"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDefault}" Value="True">
+                            <Setter Property="Opacity" Value="0.45"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+            <ListBox.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="#FF2D2D30" Padding="8,3" Margin="0,2,0,0">
+                                <TextBlock Text="{Binding Name}" Foreground="#FF9CDCFE"
+                                           FontWeight="SemiBold" FontSize="11"/>
+                            </Border>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListBox.GroupStyle>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="PropName" MinWidth="150"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Source" MinWidth="24"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                   Foreground="#FFCCCCCC" Margin="0,0,12,0"/>
+
+                        <TextBlock Grid.Column="1" Text="{Binding SourceTag}"
+                                   Foreground="{Binding SourceBrush}"
+                                   FontWeight="Bold" Margin="0,0,12,0" MinWidth="24"/>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Border Width="12" Height="12" Margin="0,0,4,0" CornerRadius="2"
+                                    Background="{Binding ColorPreview}"
+                                    BorderBrush="#FF555555" BorderThickness="1">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ColorPreview}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <TextBlock Text="{Binding DisplayValue}" Foreground="#FFAAAAAA"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Status bar -->
+        <Border Grid.Row="3" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
+            <TextBlock x:Name="StatusText" Foreground="#FF888888" FontSize="11"
+                       Text="Click the target icon to pick an element"/>
+        </Border>
     </Grid>
 </Window>
