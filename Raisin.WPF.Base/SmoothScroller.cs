@@ -11,6 +11,7 @@ public class SmoothScroller
     private bool _isAnimating;
     private TimeSpan _lastRenderingTime;
     private double _animTimeAccumulator;
+    private double _dampingDelayRemaining;
     private readonly Action _invalidateVisual;
     private readonly Func<bool> _canStop;
 
@@ -20,6 +21,11 @@ public class SmoothScroller
     public void ApplyOneFrameDecay()
     {
         Offset *= Math.Exp(-FrameInterval * Damping);
+    }
+
+    public void DeferDamping(double seconds)
+    {
+        _dampingDelayRemaining = seconds;
     }
 
     public bool ManualMode { get; set; }
@@ -54,14 +60,29 @@ public class SmoothScroller
     public void Step(double elapsedSeconds)
     {
         if (!_isAnimating) return;
-        _animTimeAccumulator += elapsedSeconds * TimeScale;
+        ApplyDecayWithDelay(elapsedSeconds);
+        CheckStop();
+        _invalidateVisual();
+    }
+
+    private void ApplyDecayWithDelay(double elapsed)
+    {
+        double decayTime = elapsed;
+        if (_dampingDelayRemaining > 0)
+        {
+            _dampingDelayRemaining -= elapsed;
+            if (_dampingDelayRemaining >= 0)
+                return;
+            decayTime = -_dampingDelayRemaining;
+            _dampingDelayRemaining = 0;
+        }
+
+        _animTimeAccumulator += decayTime * TimeScale;
         while (_animTimeAccumulator >= FrameInterval)
         {
             _animTimeAccumulator -= FrameInterval;
             Offset *= Math.Exp(-FrameInterval * Damping);
         }
-        CheckStop();
-        _invalidateVisual();
     }
 
     public void StepRaw(double elapsedSeconds)
@@ -79,21 +100,15 @@ public class SmoothScroller
             if (_lastRenderingTime == TimeSpan.Zero)
             {
                 _lastRenderingTime = args.RenderingTime;
-                Offset *= Math.Exp(-FrameInterval * Damping);
+                if (_dampingDelayRemaining <= 0)
+                    Offset *= Math.Exp(-FrameInterval * Damping);
             }
             else
             {
                 double elapsed = (args.RenderingTime - _lastRenderingTime).TotalSeconds;
                 _lastRenderingTime = args.RenderingTime;
                 if (elapsed > 0 && elapsed < 0.5)
-                {
-                    _animTimeAccumulator += elapsed * TimeScale;
-                    while (_animTimeAccumulator >= FrameInterval)
-                    {
-                        _animTimeAccumulator -= FrameInterval;
-                        Offset *= Math.Exp(-FrameInterval * Damping);
-                    }
-                }
+                    ApplyDecayWithDelay(elapsed);
             }
         }
 
