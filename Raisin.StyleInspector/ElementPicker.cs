@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -10,6 +11,7 @@ internal sealed class ElementPicker
     private readonly Action<FrameworkElement> _onPicked;
     private readonly Action<FrameworkElement>? _onHovered;
     private readonly List<Window> _hookedWindows = new();
+    private readonly List<UIElement> _hookedRoots = new();
     private readonly Dictionary<UIElement, HighlightAdorner> _adorners = new();
     private FrameworkElement? _lastHovered;
     private bool _isPicking;
@@ -39,10 +41,17 @@ internal sealed class ElementPicker
         if (!_isPicking) return;
         _isPicking = false;
 
+        foreach (var root in _hookedRoots)
+        {
+            root.PreviewMouseMove -= OnMouseMove;
+            root.PreviewMouseLeftButtonDown -= OnMouseDown;
+            if (root is FrameworkElement fe)
+                fe.Cursor = null;
+        }
+        _hookedRoots.Clear();
+
         foreach (var window in _hookedWindows)
         {
-            window.PreviewMouseMove -= OnMouseMove;
-            window.PreviewMouseLeftButtonDown -= OnMouseDown;
             window.PreviewKeyDown -= OnKeyDown;
             window.Cursor = null;
         }
@@ -58,11 +67,18 @@ internal sealed class ElementPicker
 
     private void HookWindow(Window window)
     {
-        window.PreviewMouseMove += OnMouseMove;
-        window.PreviewMouseLeftButtonDown += OnMouseDown;
+        var root = TryGetFloatingContent(window) ?? GetVisualRoot(window);
+        if (root == null) return;
+
+        root.PreviewMouseMove += OnMouseMove;
+        root.PreviewMouseLeftButtonDown += OnMouseDown;
         window.PreviewKeyDown += OnKeyDown;
         window.Cursor = Cursors.Cross;
+        if (root is FrameworkElement fe)
+            fe.Cursor = Cursors.Cross;
+
         _hookedWindows.Add(window);
+        _hookedRoots.Add(root);
     }
 
     private HighlightAdorner? GetOrCreateAdorner(UIElement content)
@@ -81,9 +97,7 @@ internal sealed class ElementPicker
 
     private void OnMouseMove(object sender, MouseEventArgs e)
     {
-        if (sender is not Window window) return;
-        var root = GetVisualRoot(window);
-        if (root == null) return;
+        if (sender is not UIElement root) return;
 
         foreach (var (c, a) in _adorners)
             if (c != root) a.UpdateTarget(null);
@@ -101,9 +115,7 @@ internal sealed class ElementPicker
 
     private void OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not Window window) return;
-        var root = GetVisualRoot(window);
-        if (root == null) return;
+        if (sender is not UIElement root) return;
 
         var point = e.GetPosition(root);
         var hit = FindElement(root, point);
@@ -114,6 +126,24 @@ internal sealed class ElementPicker
             _onPicked(hit);
 
         e.Handled = true;
+    }
+
+    /// <summary>
+    /// AvalonDock floating windows host content in a child HwndSource via FloatingWindowContentHost.
+    /// Mouse events and hit-testing can't cross that HWND boundary, so we extract the actual
+    /// content root (_rootPresenter) via reflection to hook events directly on it.
+    /// </summary>
+    private static UIElement? TryGetFloatingContent(Window window)
+    {
+        var content = window.Content;
+        if (content == null) return null;
+
+        var type = content.GetType();
+        if (!type.Name.Contains("FloatingWindowContentHost")) return null;
+
+        var field = type.GetField("_rootPresenter",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        return field?.GetValue(content) as UIElement;
     }
 
     private static UIElement? GetVisualRoot(Window window)

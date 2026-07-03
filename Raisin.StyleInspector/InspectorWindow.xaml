@@ -35,11 +35,14 @@
                 <TextBox x:Name="SearchBox" Width="200"
                          Background="#FF3E3E42" Foreground="#FFCCCCCC" BorderBrush="#FF555555"
                          Padding="4,2" VerticalContentAlignment="Center"
-                         TextChanged="OnFilterChanged"/>
+                         TextChanged="OnSearchChanged"/>
                 <CheckBox x:Name="HideDefaultsBox" Content="Hide defaults"
                           Foreground="#FFAAAAAA" Margin="12,0,0,0"
                           VerticalAlignment="Center"
                           Checked="OnFilterChanged" Unchecked="OnFilterChanged"/>
+                <Button x:Name="ResetAllButton" Content="Reset All" Click="OnResetAllClick"
+                        Padding="8,3" Margin="12,0,0,0" Visibility="Collapsed"
+                        Foreground="#FFCCCCCC" Background="#FF3E3E42" BorderBrush="#FF555555"/>
             </StackPanel>
         </Border>
 
@@ -63,7 +66,7 @@
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="Padding" Value="8,2"/>
+                    <Setter Property="Padding" Value="8,1"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
@@ -110,19 +113,25 @@
                             <ColumnDefinition Width="Auto" SharedSizeGroup="PropName" MinWidth="150"/>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Source" MinWidth="24"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0" Text="{Binding Name}"
-                                   Foreground="#FFCCCCCC" Margin="0,0,12,0"/>
+                                   Foreground="#FFCCCCCC" Margin="0,0,12,0"
+                                   VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Column="1" Text="{Binding SourceTag}"
                                    Foreground="{Binding SourceBrush}"
-                                   FontWeight="Bold" Margin="0,0,12,0" MinWidth="24"/>
+                                   FontWeight="Bold" Margin="0,0,12,0" MinWidth="24"
+                                   VerticalAlignment="Center"/>
 
-                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <!-- Value editors -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Color swatch -->
                             <Border Width="12" Height="12" Margin="0,0,4,0" CornerRadius="2"
                                     Background="{Binding ColorPreview}"
-                                    BorderBrush="#FF555555" BorderThickness="1">
+                                    BorderBrush="#FF555555" BorderThickness="1"
+                                    VerticalAlignment="Center">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Style.Triggers>
@@ -133,8 +142,82 @@
                                     </Style>
                                 </Border.Style>
                             </Border>
-                            <TextBlock Text="{Binding DisplayValue}" Foreground="#FFAAAAAA"/>
+
+                            <!-- Bool editor -->
+                            <CheckBox IsChecked="{Binding BoolValue, Mode=OneWay}"
+                                      Checked="OnBoolChanged" Unchecked="OnBoolChanged"
+                                      VerticalAlignment="Center">
+                                <CheckBox.Style>
+                                    <Style TargetType="CheckBox">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsBoolType}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </CheckBox.Style>
+                            </CheckBox>
+
+                            <!-- Enum editor -->
+                            <ComboBox ItemsSource="{Binding EnumValues}"
+                                      SelectedItem="{Binding Value, Mode=OneWay}"
+                                      SelectionChanged="OnEnumChanged"
+                                      Background="#FF3E3E42" Foreground="#FFCCCCCC"
+                                      BorderBrush="#FF555555" MinWidth="100"
+                                      Padding="2,0" FontSize="12">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEnumType}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.Style>
+                            </ComboBox>
+
+                            <!-- Text editor (default for non-bool, non-enum) -->
+                            <TextBox Text="{Binding DisplayValue, Mode=OneWay}"
+                                     KeyDown="OnValueKeyDown" LostFocus="OnValueLostFocus"
+                                     Background="Transparent" Foreground="#FFAAAAAA"
+                                     BorderThickness="0" Padding="0"
+                                     MinWidth="100" FontSize="12"
+                                     VerticalAlignment="Center">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsTextType}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                        <Style.Resources>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FF264F78"/>
+                                        </Style.Resources>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
                         </StackPanel>
+
+                        <!-- Reset button -->
+                        <Button Grid.Column="3" Content="×" Click="OnResetClick"
+                                Padding="4,0" Margin="4,0,0,0" FontSize="12"
+                                Foreground="#FF888888" Background="Transparent"
+                                BorderThickness="0" VerticalAlignment="Center"
+                                ToolTip="Reset to original value">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEdited}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

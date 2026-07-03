@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace Raisin.StyleInspector;
 
@@ -59,6 +61,7 @@ public partial class InspectorWindow : Window
             _properties.Add(prop);
 
         UpdateStatus();
+        UpdateResetAllVisibility();
     }
 
     private void OnElementHovered(FrameworkElement element) => ShowElement(element);
@@ -69,8 +72,8 @@ public partial class InspectorWindow : Window
         ShowElement(element);
     }
 
+    private void OnSearchChanged(object sender, TextChangedEventArgs e) => RefreshFilter();
     private void OnFilterChanged(object sender, RoutedEventArgs e) => RefreshFilter();
-    private void OnFilterChanged(object sender, TextChangedEventArgs e) => RefreshFilter();
 
     private void RefreshFilter()
     {
@@ -97,6 +100,77 @@ public partial class InspectorWindow : Window
             return prop.Name.Contains(search, StringComparison.OrdinalIgnoreCase);
 
         return true;
+    }
+
+    private void OnValueKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && sender is TextBox tb && tb.DataContext is InspectedProperty prop)
+        {
+            if (prop.ApplyText(tb.Text))
+            {
+                UpdateResetAllVisibility();
+                Keyboard.ClearFocus();
+            }
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape && sender is TextBox tbEsc && tbEsc.DataContext is InspectedProperty propEsc)
+        {
+            tbEsc.Text = propEsc.DisplayValue;
+            Keyboard.ClearFocus();
+            e.Handled = true;
+        }
+    }
+
+    private void OnValueLostFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox tb && tb.DataContext is InspectedProperty prop)
+        {
+            if (tb.Text != prop.DisplayValue)
+                prop.ApplyText(tb.Text);
+            UpdateResetAllVisibility();
+        }
+    }
+
+    private void OnBoolChanged(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox cb && cb.DataContext is InspectedProperty prop)
+        {
+            prop.ApplyValue(cb.IsChecked == true);
+            UpdateResetAllVisibility();
+        }
+    }
+
+    private void OnEnumChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is ComboBox combo && combo.DataContext is InspectedProperty prop
+            && combo.SelectedItem != null && !Equals(combo.SelectedItem, prop.Value))
+        {
+            prop.ApplyValue(combo.SelectedItem);
+            UpdateResetAllVisibility();
+        }
+    }
+
+    private void OnResetClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.DataContext is InspectedProperty prop)
+        {
+            prop.ResetValue();
+            UpdateResetAllVisibility();
+        }
+    }
+
+    private void OnResetAllClick(object sender, RoutedEventArgs e)
+    {
+        foreach (var prop in _properties.Where(p => p.IsEdited).ToList())
+            prop.ResetValue();
+        UpdateResetAllVisibility();
+    }
+
+    private void UpdateResetAllVisibility()
+    {
+        ResetAllButton.Visibility = _properties.Any(p => p.IsEdited)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     protected override void OnClosed(EventArgs e)

@@ -28,7 +28,7 @@ internal static class PropertyEnumerator
             var dp = (DependencyProperty)field.GetValue(null)!;
             if (!seen.Add(dp)) continue;
             try { AddProperty(results, element, dp, field.DeclaringType?.Name ?? "Other"); }
-            catch { /* skip unreadable properties */ }
+            catch { }
         }
 
         var localEnum = element.GetLocalValueEnumerator();
@@ -62,10 +62,11 @@ internal static class PropertyEnumerator
             ColorPreview = GetColorPreview(value),
             ResourceKey = resourceKey,
             Property = dp,
+            Element = element,
         });
     }
 
-    private static string GetSourceTag(BaseValueSource source) => source switch
+    internal static string GetSourceTag(BaseValueSource source) => source switch
     {
         BaseValueSource.Default => "D",
         BaseValueSource.Inherited => "I",
@@ -78,7 +79,7 @@ internal static class PropertyEnumerator
         _ => "?",
     };
 
-    private static Brush GetSourceBrush(BaseValueSource source) => source switch
+    internal static Brush GetSourceBrush(BaseValueSource source) => source switch
     {
         BaseValueSource.Default => DefaultBrush,
         BaseValueSource.Inherited => InheritedBrush,
@@ -89,7 +90,7 @@ internal static class PropertyEnumerator
         _ => DefaultBrush,
     };
 
-    private static string FormatValue(object? value, string? resourceKey)
+    internal static string FormatValue(object? value, string? resourceKey)
     {
         var formatted = value switch
         {
@@ -114,7 +115,7 @@ internal static class PropertyEnumerator
         return resourceKey != null ? $"{{{resourceKey}}} → {formatted}" : formatted;
     }
 
-    private static Brush? GetColorPreview(object? value)
+    internal static Brush? GetColorPreview(object? value)
     {
         Color? color = value switch
         {
@@ -126,6 +127,63 @@ internal static class PropertyEnumerator
         var preview = new SolidColorBrush(color.Value);
         preview.Freeze();
         return preview;
+    }
+
+    internal static object? ParseValue(string text, Type targetType)
+    {
+        try
+        {
+            if (targetType == typeof(string)) return text;
+            if (targetType == typeof(double))
+            {
+                if (text.Equals("Auto", StringComparison.OrdinalIgnoreCase)) return double.NaN;
+                return double.TryParse(text, out var d) ? d : null;
+            }
+            if (targetType == typeof(int)) return int.TryParse(text, out var i) ? i : null;
+            if (targetType == typeof(bool)) return bool.TryParse(text, out var b) ? b : null;
+            if (targetType == typeof(Thickness))
+            {
+                var parts = text.Split(',').Select(s => double.TryParse(s.Trim(), out var v) ? v : 0.0).ToArray();
+                return parts.Length switch
+                {
+                    1 => new Thickness(parts[0]),
+                    2 => new Thickness(parts[0], parts[1], parts[0], parts[1]),
+                    4 => new Thickness(parts[0], parts[1], parts[2], parts[3]),
+                    _ => null,
+                };
+            }
+            if (targetType == typeof(CornerRadius))
+            {
+                var parts = text.Split(',').Select(s => double.TryParse(s.Trim(), out var v) ? v : 0.0).ToArray();
+                return parts.Length switch
+                {
+                    1 => new CornerRadius(parts[0]),
+                    4 => new CornerRadius(parts[0], parts[1], parts[2], parts[3]),
+                    _ => null,
+                };
+            }
+            if (targetType == typeof(Brush) || targetType == typeof(SolidColorBrush))
+                return new BrushConverter().ConvertFromString(text);
+            if (targetType == typeof(Color))
+                return ColorConverter.ConvertFromString(text);
+            if (targetType == typeof(FontFamily))
+                return new FontFamily(text);
+            if (targetType == typeof(GridLength))
+            {
+                if (text.Equals("Auto", StringComparison.OrdinalIgnoreCase)) return GridLength.Auto;
+                if (text.EndsWith('*'))
+                {
+                    var n = text[..^1];
+                    return string.IsNullOrEmpty(n) ? new GridLength(1, GridUnitType.Star)
+                        : double.TryParse(n, out var s) ? new GridLength(s, GridUnitType.Star) : null;
+                }
+                return double.TryParse(text, out var px) ? new GridLength(px) : null;
+            }
+            if (targetType.IsEnum)
+                return Enum.Parse(targetType, text, ignoreCase: true);
+        }
+        catch { }
+        return null;
     }
 
     private static string? TryGetResourceKey(DependencyObject element, DependencyProperty dp)
