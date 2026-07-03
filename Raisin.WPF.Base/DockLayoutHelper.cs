@@ -16,6 +16,12 @@ public static class DockLayoutHelper
         SafeFile.ReplaceOrMove(tmpXml, xmlPath);
     }
 
+    // NullReferenceException in HwndKeyboardInputProvider.AcquireFocus when
+    // AvalonDock re-parents controls into a floating window before the HWND is ready.
+    public static bool IsHwndFocusRace(Exception ex)
+        => ex is NullReferenceException
+           && ex.StackTrace?.Contains("HwndKeyboardInputProvider") == true;
+
     public static bool RestoreDockLayout(DockingManager manager, Func<string, object?> contentResolver, string xmlPath)
     {
         if (!File.Exists(xmlPath))
