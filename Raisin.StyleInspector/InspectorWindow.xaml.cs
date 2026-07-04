@@ -11,17 +11,49 @@ namespace Raisin.StyleInspector;
 public partial class InspectorWindow : Window
 {
     private readonly ObservableCollection<InspectedProperty> _properties = new();
-    private ICollectionView? _view;
+    private readonly ObservableCollection<ComparedProperty> _compared = new();
+    private ICollectionView? _inspectView;
+    private ICollectionView? _compareView;
     private ElementPicker? _picker;
+    private FrameworkElement? _elementA;
+    private FrameworkElement? _elementB;
+    private bool _pickingB;
+    private bool _isCompareMode;
 
     public InspectorWindow()
     {
         InitializeComponent();
 
-        _view = CollectionViewSource.GetDefaultView(_properties);
-        _view.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
-        _view.Filter = FilterProperty;
-        PropertyList.ItemsSource = _view;
+        _inspectView = CollectionViewSource.GetDefaultView(_properties);
+        _inspectView.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
+        _inspectView.Filter = FilterInspectProperty;
+
+        _compareView = CollectionViewSource.GetDefaultView(_compared);
+        _compareView.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
+        _compareView.Filter = FilterCompareProperty;
+
+        SetInspectMode();
+    }
+
+    private void SetInspectMode()
+    {
+        _isCompareMode = false;
+        PropertyList.ItemsSource = _inspectView;
+        PropertyList.ItemContainerStyle = (Style)Resources["InspectorItemStyle"];
+        PropertyList.ItemTemplate = (DataTemplate)Resources["InspectTemplate"];
+        HideDefaultsBox.Visibility = Visibility.Visible;
+        DiffsOnlyBox.Visibility = Visibility.Collapsed;
+    }
+
+    private void SetCompareMode()
+    {
+        _isCompareMode = true;
+        PropertyList.ItemsSource = _compareView;
+        PropertyList.ItemContainerStyle = (Style)Resources["CompareItemStyle"];
+        PropertyList.ItemTemplate = (DataTemplate)Resources["CompareTemplate"];
+        HideDefaultsBox.Visibility = Visibility.Collapsed;
+        DiffsOnlyBox.Visibility = Visibility.Visible;
+        ClearBButton.Visibility = Visibility.Visible;
     }
 
     private void OnPickClick(object sender, RoutedEventArgs e)
@@ -29,16 +61,27 @@ public partial class InspectorWindow : Window
         if (_picker?.IsPicking == true)
             StopPicking();
         else
-            StartPicking();
+            StartPicking(pickB: false);
     }
 
-    private void StartPicking()
+    private void OnPickBClick(object sender, RoutedEventArgs e)
     {
+        if (_picker?.IsPicking == true)
+            StopPicking();
+        else
+            StartPicking(pickB: true);
+    }
+
+    private void StartPicking(bool pickB)
+    {
+        _pickingB = pickB;
         _picker = new ElementPicker(OnElementPicked, OnElementHovered);
         _picker.Start();
-        PickButton.BorderBrush = new System.Windows.Media.SolidColorBrush(
+
+        var activeButton = pickB ? PickBButton : PickButton;
+        activeButton.BorderBrush = new System.Windows.Media.SolidColorBrush(
             System.Windows.Media.Color.FromRgb(0x00, 0x7A, 0xCC));
-        StatusText.Text = "Click an element to inspect…";
+        StatusText.Text = pickB ? "Click element B to compare…" : "Click an element to inspect…";
     }
 
     private void StopPicking()
@@ -47,14 +90,57 @@ public partial class InspectorWindow : Window
         _picker = null;
         PickButton.BorderBrush = new System.Windows.Media.SolidColorBrush(
             System.Windows.Media.Color.FromRgb(0x55, 0x55, 0x55));
+        PickBButton.BorderBrush = new System.Windows.Media.SolidColorBrush(
+            System.Windows.Media.Color.FromRgb(0x55, 0x55, 0x55));
     }
 
-    private void ShowElement(FrameworkElement element)
+    private void OnElementHovered(FrameworkElement element)
     {
+        if (_pickingB)
+            ShowElementB(element, live: true);
+        else
+            ShowElementA(element, live: true);
+    }
+
+    private void OnElementPicked(FrameworkElement element)
+    {
+        StopPicking();
+        if (_pickingB)
+            ShowElementB(element, live: false);
+        else
+            ShowElementA(element, live: false);
+    }
+
+    private void ShowElementA(FrameworkElement element, bool live)
+    {
+        _elementA = element;
         var name = string.IsNullOrEmpty(element.Name) ? "" : $" \"{element.Name}\"";
         ElementType.Text = $"{element.GetType().Name}{name}";
         ElementDetail.Text = element.GetType().FullName;
         ElementInfoPanel.Visibility = Visibility.Visible;
+
+        if (_elementB != null)
+            RunCompare();
+        else
+            ShowInspectView(element);
+    }
+
+    private void ShowElementB(FrameworkElement element, bool live)
+    {
+        _elementB = element;
+        var name = string.IsNullOrEmpty(element.Name) ? "" : $" \"{element.Name}\"";
+        ElementBType.Text = $"{element.GetType().Name}{name}";
+        ElementBDetail.Text = element.GetType().FullName;
+        ElementBInfoPanel.Visibility = Visibility.Visible;
+
+        if (_elementA != null)
+            RunCompare();
+    }
+
+    private void ShowInspectView(FrameworkElement element)
+    {
+        if (_isCompareMode)
+            SetInspectMode();
 
         _properties.Clear();
         foreach (var prop in PropertyEnumerator.Enumerate(element))
@@ -64,12 +150,31 @@ public partial class InspectorWindow : Window
         UpdateResetAllVisibility();
     }
 
-    private void OnElementHovered(FrameworkElement element) => ShowElement(element);
-
-    private void OnElementPicked(FrameworkElement element)
+    private void RunCompare()
     {
-        StopPicking();
-        ShowElement(element);
+        if (_elementA == null || _elementB == null) return;
+
+        if (!_isCompareMode)
+            SetCompareMode();
+
+        _compared.Clear();
+        foreach (var cp in CompareEngine.Compare(_elementA, _elementB))
+            _compared.Add(cp);
+
+        UpdateStatus();
+    }
+
+    private void OnClearBClick(object sender, RoutedEventArgs e)
+    {
+        _elementB = null;
+        ElementBInfoPanel.Visibility = Visibility.Collapsed;
+        ClearBButton.Visibility = Visibility.Collapsed;
+        DiffsOnlyBox.Visibility = Visibility.Collapsed;
+
+        if (_elementA != null)
+            ShowInspectView(_elementA);
+        else
+            SetInspectMode();
     }
 
     private void OnSearchChanged(object sender, TextChangedEventArgs e) => RefreshFilter();
@@ -77,23 +182,48 @@ public partial class InspectorWindow : Window
 
     private void RefreshFilter()
     {
-        _view?.Refresh();
+        if (_isCompareMode)
+            _compareView?.Refresh();
+        else
+            _inspectView?.Refresh();
         UpdateStatus();
     }
 
     private void UpdateStatus()
     {
-        var total = _properties.Count;
-        var visible = _view?.Cast<object>().Count() ?? total;
-        StatusText.Text = visible == total
-            ? $"{total} properties"
-            : $"{visible} of {total} properties";
+        if (_isCompareMode)
+        {
+            var total = _compared.Count;
+            var visible = _compareView?.Cast<object>().Count() ?? total;
+            var diffs = _compared.Count(p => p.IsDifferent);
+            StatusText.Text = $"{diffs} differences, {visible} of {total} properties";
+        }
+        else
+        {
+            var total = _properties.Count;
+            var visible = _inspectView?.Cast<object>().Count() ?? total;
+            StatusText.Text = visible == total
+                ? $"{total} properties"
+                : $"{visible} of {total} properties";
+        }
     }
 
-    private bool FilterProperty(object obj)
+    private bool FilterInspectProperty(object obj)
     {
         if (obj is not InspectedProperty prop) return false;
         if (HideDefaultsBox.IsChecked == true && prop.IsDefault) return false;
+
+        var search = SearchBox.Text;
+        if (!string.IsNullOrEmpty(search))
+            return prop.Name.Contains(search, StringComparison.OrdinalIgnoreCase);
+
+        return true;
+    }
+
+    private bool FilterCompareProperty(object obj)
+    {
+        if (obj is not ComparedProperty prop) return false;
+        if (DiffsOnlyBox.IsChecked == true && prop.IsMatch) return false;
 
         var search = SearchBox.Text;
         if (!string.IsNullOrEmpty(search))
