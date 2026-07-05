@@ -217,8 +217,8 @@ public partial class InspectorWindow : Window
 
     private void OnTreeUpClick(object sender, RoutedEventArgs e)
     {
-        if (_elementA == null) return;
-        var parent = VisualTreeWalker.GetVisualParent(_elementA);
+        if (_lastTreeRootElement == null) return;
+        var parent = VisualTreeWalker.GetVisualParent(_lastTreeRootElement);
         if (parent == null)
         {
             StatusText.Text = "Already at visual tree root";
@@ -227,22 +227,16 @@ public partial class InspectorWindow : Window
 
         try
         {
+            var selectedElement = _elementA;
+            _lastTreeRootElement = parent;
             _treeRoot = VisualTreeWalker.Build(parent);
             VisualTreeView.ItemsSource = new[] { _treeRoot };
             _treeRoot.IsExpanded = true;
 
             _suppressTreeSelection = true;
-            VisualTreeWalker.ExpandPathTo(_treeRoot, _elementA);
+            if (selectedElement != null)
+                VisualTreeWalker.ExpandPathTo(_treeRoot, selectedElement);
             _suppressTreeSelection = false;
-
-            if (parent is FrameworkElement parentFe)
-            {
-                _elementA = parentFe;
-                var name = string.IsNullOrEmpty(parentFe.Name) ? "" : $" \"{parentFe.Name}\"";
-                ElementType.Text = $"{parentFe.GetType().Name}{name}";
-                ElementDetail.Text = parentFe.GetType().FullName;
-                ShowInspectView(parentFe);
-            }
         }
         catch
         {
