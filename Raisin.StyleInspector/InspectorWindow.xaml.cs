@@ -23,6 +23,9 @@ public partial class InspectorWindow : Window
     private VisualTreeNode? _treeRoot;
     private DependencyObject? _lastTreeRootElement;
     private bool _suppressTreeSelection;
+    private VisualTreeNode? _treeRootB;
+    private DependencyObject? _lastTreeRootElementB;
+    private bool _suppressTreeSelectionB;
 
     public InspectorWindow()
     {
@@ -139,6 +142,8 @@ public partial class InspectorWindow : Window
         ElementBDetail.Text = element.GetType().FullName;
         ElementBInfoPanel.Visibility = Visibility.Visible;
 
+        BuildVisualTreeB(element);
+
         if (_elementA != null)
             RunCompare();
     }
@@ -147,15 +152,7 @@ public partial class InspectorWindow : Window
     {
         try
         {
-            DependencyObject root;
-            try
-            {
-                root = VisualTreeWalker.FindControlRoot(element);
-            }
-            catch
-            {
-                root = element;
-            }
+            var root = VisualTreeWalker.FindAncestor(element, 5);
 
             if (!ReferenceEquals(root, _lastTreeRootElement) || _treeRoot == null)
             {
@@ -244,6 +241,134 @@ public partial class InspectorWindow : Window
         }
     }
 
+    private void OnTreeExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_elementA == null) return;
+
+        try
+        {
+            var root = VisualTreeWalker.FindVisualRoot(_elementA);
+            _lastTreeRootElement = root;
+            _treeRoot = VisualTreeWalker.Build(root);
+            VisualTreeView.ItemsSource = new[] { _treeRoot };
+            _treeRoot.IsExpanded = true;
+
+            _suppressTreeSelection = true;
+            VisualTreeWalker.ExpandPathTo(_treeRoot, _elementA);
+            _suppressTreeSelection = false;
+        }
+        catch
+        {
+            StatusText.Text = "Cannot expand full tree";
+        }
+    }
+
+    private void BuildVisualTreeB(DependencyObject element)
+    {
+        try
+        {
+            var root = VisualTreeWalker.FindAncestor(element, 5);
+
+            if (!ReferenceEquals(root, _lastTreeRootElementB) || _treeRootB == null)
+            {
+                _lastTreeRootElementB = root;
+                _treeRootB = VisualTreeWalker.Build(root);
+
+                if (!_treeRootB.HasChildren && !ReferenceEquals(root, element))
+                {
+                    _treeRootB = VisualTreeWalker.Build(element);
+                    _lastTreeRootElementB = element;
+                }
+
+                VisualTreeBView.ItemsSource = new[] { _treeRootB };
+                _treeRootB.IsExpanded = true;
+            }
+
+            _suppressTreeSelectionB = true;
+            ClearTreeSelection(_treeRootB);
+            VisualTreeWalker.ExpandPathTo(_treeRootB, element);
+            _suppressTreeSelectionB = false;
+
+            TreeBPanel.Visibility = Visibility.Visible;
+            TreeBSplitter.Visibility = Visibility.Visible;
+            if (TreeBColumn.Width.Value < 10)
+                TreeBColumn.Width = new GridLength(240);
+        }
+        catch (Exception ex)
+        {
+            TreeBPanel.Visibility = Visibility.Collapsed;
+            TreeBSplitter.Visibility = Visibility.Collapsed;
+            TreeBColumn.Width = new GridLength(0);
+            StatusText.Text = $"Tree B: {ex.GetType().Name}: {ex.Message}";
+        }
+    }
+
+    private void OnTreeBNodeSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        if (_suppressTreeSelectionB) return;
+        if (e.NewValue is VisualTreeNode node && node.Element is FrameworkElement fe)
+        {
+            _elementB = fe;
+            var name = string.IsNullOrEmpty(fe.Name) ? "" : $" \"{fe.Name}\"";
+            ElementBType.Text = $"{fe.GetType().Name}{name}";
+            ElementBDetail.Text = fe.GetType().FullName;
+
+            if (_elementA != null)
+                RunCompare();
+        }
+    }
+
+    private void OnTreeBUpClick(object sender, RoutedEventArgs e)
+    {
+        if (_lastTreeRootElementB == null) return;
+        var parent = VisualTreeWalker.GetVisualParent(_lastTreeRootElementB);
+        if (parent == null)
+        {
+            StatusText.Text = "Already at visual tree root";
+            return;
+        }
+
+        try
+        {
+            var selectedElement = _elementB;
+            _lastTreeRootElementB = parent;
+            _treeRootB = VisualTreeWalker.Build(parent);
+            VisualTreeBView.ItemsSource = new[] { _treeRootB };
+            _treeRootB.IsExpanded = true;
+
+            _suppressTreeSelectionB = true;
+            if (selectedElement != null)
+                VisualTreeWalker.ExpandPathTo(_treeRootB, selectedElement);
+            _suppressTreeSelectionB = false;
+        }
+        catch
+        {
+            StatusText.Text = "Cannot navigate further up";
+        }
+    }
+
+    private void OnTreeBExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_elementB == null) return;
+
+        try
+        {
+            var root = VisualTreeWalker.FindVisualRoot(_elementB);
+            _lastTreeRootElementB = root;
+            _treeRootB = VisualTreeWalker.Build(root);
+            VisualTreeBView.ItemsSource = new[] { _treeRootB };
+            _treeRootB.IsExpanded = true;
+
+            _suppressTreeSelectionB = true;
+            VisualTreeWalker.ExpandPathTo(_treeRootB, _elementB);
+            _suppressTreeSelectionB = false;
+        }
+        catch
+        {
+            StatusText.Text = "Cannot expand full tree";
+        }
+    }
+
     private void ShowInspectView(FrameworkElement element)
     {
         if (_isCompareMode)
@@ -305,9 +430,14 @@ public partial class InspectorWindow : Window
     private void OnClearBClick(object sender, RoutedEventArgs e)
     {
         _elementB = null;
+        _treeRootB = null;
+        _lastTreeRootElementB = null;
         ElementBInfoPanel.Visibility = Visibility.Collapsed;
         ClearBButton.Visibility = Visibility.Collapsed;
         DiffsOnlyBox.Visibility = Visibility.Collapsed;
+        TreeBPanel.Visibility = Visibility.Collapsed;
+        TreeBSplitter.Visibility = Visibility.Collapsed;
+        TreeBColumn.Width = new GridLength(0);
 
         if (_elementA != null)
             ShowInspectView(_elementA);

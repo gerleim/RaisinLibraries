@@ -41,30 +41,16 @@ internal static class VisualTreeWalker
         }
     }
 
-    public static DependencyObject FindControlRoot(DependencyObject element)
+    public static DependencyObject FindAncestor(DependencyObject element, int levels)
     {
-        // Walk up to find a meaningful root: the nearest FrameworkElement ancestor
-        // that itself is a Control/UserControl with children (the "template host").
-        // Falls back to the visual tree root if no good boundary is found.
         var current = element;
-        DependencyObject? bestRoot = null;
-
-        while (current != null)
+        for (int i = 0; i < levels; i++)
         {
             var parent = VisualTreeHelper.GetParent(current);
-            if (parent == null)
-                return bestRoot ?? current;
-
-            if (current is System.Windows.Controls.Control &&
-                VisualTreeHelper.GetChildrenCount(current) > 0)
-            {
-                bestRoot = current;
-            }
-
+            if (parent == null) break;
             current = parent;
         }
-
-        return bestRoot ?? element;
+        return current;
     }
 
     public static bool ExpandPathTo(VisualTreeNode root, DependencyObject target)

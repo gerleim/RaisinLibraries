@@ -190,6 +190,69 @@
             </Grid>
         </DataTemplate>
 
+        <!-- Compact TreeViewItem style shared by both trees -->
+        <Style x:Key="CompactTreeItemStyle" TargetType="TreeViewItem">
+            <Setter Property="Foreground" Value="#FFD4D4D4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <StackPanel>
+                            <Border x:Name="Bd" Background="Transparent" Padding="1,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <ToggleButton x:Name="Expander" Focusable="False"
+                                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press" Background="Transparent" BorderThickness="0"
+                                                  Width="12" Padding="0">
+                                        <TextBlock Text="▸" Foreground="#FF888888" FontSize="10"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType=ToggleButton}}" Value="True">
+                                                            <Setter Property="Text" Value="▾"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </ToggleButton>
+                                    <ContentPresenter Grid.Column="1"
+                                                      ContentSource="Header"
+                                                      HorizontalAlignment="Stretch"/>
+                                </Grid>
+                            </Border>
+                            <ItemsPresenter x:Name="ItemsHost" Margin="10,0,0,0"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="False">
+                                <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#FF264F78"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="False"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bd" Property="Background" Value="#FF2A2D2E"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsExpanded" Value="False">
+                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Compare mode template -->
         <DataTemplate x:Key="CompareTemplate" DataType="{x:Type local:ComparedProperty}">
             <Grid>
@@ -409,6 +472,8 @@
                 <ColumnDefinition x:Name="TreeColumn" Width="0"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="TreeBColumn" Width="0"/>
             </Grid.ColumnDefinitions>
 
             <!-- Visual tree panel -->
@@ -418,83 +483,28 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Visual Tree" Foreground="#FF9CDCFE"
                                    FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
-                        <Button x:Name="TreeUpButton" Content="Up" Click="OnTreeUpClick"
-                                Padding="6,1" Margin="8,0,0,0" FontSize="10"
-                                Foreground="#FFCCCCCC" Background="#FF3E3E42" BorderBrush="#FF555555"
-                                ToolTip="Navigate to parent element"/>
+                        <Button x:Name="TreeUpButton" Click="OnTreeUpClick"
+                                Padding="3,1" Margin="8,0,0,0"
+                                Background="#FF3E3E42" BorderBrush="#FF555555"
+                                ToolTip="Navigate up one level">
+                            <TextBlock Text="↑" Foreground="#FFCCCCCC" FontSize="12"/>
+                        </Button>
+                        <Button x:Name="TreeExpandAllButton" Click="OnTreeExpandAllClick"
+                                Padding="3,1" Margin="2,0,0,0"
+                                Background="#FF3E3E42" BorderBrush="#FF555555"
+                                ToolTip="Show full tree from root">
+                            <TextBlock Text="⇈" Foreground="#FFCCCCCC" FontSize="12"/>
+                        </Button>
                     </StackPanel>
                 </Border>
                 <TreeView x:Name="VisualTreeView" Background="#FF1E1E1E" BorderThickness="0"
                           SelectedItemChanged="OnTreeNodeSelected"
+                          ItemContainerStyle="{StaticResource CompactTreeItemStyle}"
                           VirtualizingPanel.IsVirtualizing="False">
                     <TreeView.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FF264F78"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#FF264F78"/>
                     </TreeView.Resources>
-                    <TreeView.ItemContainerStyle>
-                        <Style TargetType="TreeViewItem">
-                            <Setter Property="Foreground" Value="#FFD4D4D4"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="TreeViewItem">
-                                        <StackPanel>
-                                            <Border x:Name="Bd" Background="Transparent" Padding="1,0">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="12"/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <ToggleButton x:Name="Expander" Focusable="False"
-                                                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-                                                                  ClickMode="Press" Background="Transparent" BorderThickness="0"
-                                                                  Width="12" Padding="0">
-                                                        <TextBlock Text="▸" Foreground="#FF888888" FontSize="10"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                   RenderTransformOrigin="0.5,0.5">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType=ToggleButton}}" Value="True">
-                                                                            <Setter Property="Text" Value="▾"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-                                                    </ToggleButton>
-                                                    <ContentPresenter Grid.Column="1"
-                                                                      ContentSource="Header"
-                                                                      HorizontalAlignment="Stretch"/>
-                                                </Grid>
-                                            </Border>
-                                            <ItemsPresenter x:Name="ItemsHost" Margin="10,0,0,0"/>
-                                        </StackPanel>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="HasItems" Value="False">
-                                                <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="#FF264F78"/>
-                                            </Trigger>
-                                            <MultiTrigger>
-                                                <MultiTrigger.Conditions>
-                                                    <Condition Property="IsSelected" Value="False"/>
-                                                    <Condition Property="IsMouseOver" Value="True"/>
-                                                </MultiTrigger.Conditions>
-                                                <Setter TargetName="Bd" Property="Background" Value="#FF2A2D2E"/>
-                                            </MultiTrigger>
-                                            <Trigger Property="IsExpanded" Value="False">
-                                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </TreeView.ItemContainerStyle>
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                             <TextBlock Text="{Binding Label}" ToolTip="{Binding TypeName}"/>
@@ -528,6 +538,48 @@
                     </GroupStyle>
                 </ListBox.GroupStyle>
             </ListBox>
+
+            <!-- Splitter B -->
+            <GridSplitter x:Name="TreeBSplitter" Grid.Column="3" Width="4"
+                          Background="#FF3F3F46" Visibility="Collapsed"
+                          HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+
+            <!-- Visual tree B panel -->
+            <DockPanel x:Name="TreeBPanel" Grid.Column="4" Visibility="Collapsed">
+                <Border DockPanel.Dock="Top" Background="#FF2D2D30" Padding="6,3"
+                        BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Tree B" Foreground="#FFCE9178"
+                                   FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                        <Button Click="OnTreeBUpClick"
+                                Padding="3,1" Margin="8,0,0,0"
+                                Background="#FF3E3E42" BorderBrush="#FF555555"
+                                ToolTip="Navigate up one level">
+                            <TextBlock Text="↑" Foreground="#FFCCCCCC" FontSize="12"/>
+                        </Button>
+                        <Button Click="OnTreeBExpandAllClick"
+                                Padding="3,1" Margin="2,0,0,0"
+                                Background="#FF3E3E42" BorderBrush="#FF555555"
+                                ToolTip="Show full tree from root">
+                            <TextBlock Text="⇈" Foreground="#FFCCCCCC" FontSize="12"/>
+                        </Button>
+                    </StackPanel>
+                </Border>
+                <TreeView x:Name="VisualTreeBView" Background="#FF1E1E1E" BorderThickness="0"
+                          SelectedItemChanged="OnTreeBNodeSelected"
+                          ItemContainerStyle="{StaticResource CompactTreeItemStyle}"
+                          VirtualizingPanel.IsVirtualizing="False">
+                    <TreeView.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FF264F78"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#FF264F78"/>
+                    </TreeView.Resources>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Label}" ToolTip="{Binding TypeName}"/>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </DockPanel>
         </Grid>
 
         <!-- Status bar -->
