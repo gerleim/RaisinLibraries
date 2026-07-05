@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -146,8 +147,10 @@ public partial class InspectorWindow : Window
         foreach (var prop in PropertyEnumerator.Enumerate(element))
             _properties.Add(prop);
 
+        ShowStyleChain(element);
         UpdateStatus();
         UpdateResetAllVisibility();
+        ExportButton.Visibility = Visibility.Visible;
     }
 
     private void RunCompare()
@@ -161,7 +164,36 @@ public partial class InspectorWindow : Window
         foreach (var cp in CompareEngine.Compare(_elementA, _elementB))
             _compared.Add(cp);
 
+        StyleChainPanel.Visibility = Visibility.Collapsed;
+        ExportButton.Visibility = Visibility.Visible;
         UpdateStatus();
+    }
+
+    private void ShowStyleChain(FrameworkElement element)
+    {
+        var chain = StyleChainResolver.Resolve(element);
+        StyleChainList.ItemsSource = chain;
+        StyleChainPanel.Visibility = chain.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnStyleChainEntryClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is StyleChainEntry entry && entry.Style != null)
+        {
+            var setters = StyleChainResolver.GetSetterNames(entry.Style);
+            if (setters.Count > 0)
+            {
+                SearchBox.Text = "";
+                HideDefaultsBox.IsChecked = false;
+
+                var setterSet = new HashSet<string>(setters, StringComparer.OrdinalIgnoreCase);
+                _inspectView!.Filter = obj =>
+                    obj is InspectedProperty prop && setterSet.Contains(prop.Name);
+                _inspectView.Refresh();
+                UpdateStatus();
+                StatusText.Text = $"Showing {setters.Count} properties from \"{entry.Label}\"";
+            }
+        }
     }
 
     private void OnClearBClick(object sender, RoutedEventArgs e)
@@ -183,9 +215,15 @@ public partial class InspectorWindow : Window
     private void RefreshFilter()
     {
         if (_isCompareMode)
-            _compareView?.Refresh();
+        {
+            _compareView!.Filter = FilterCompareProperty;
+            _compareView.Refresh();
+        }
         else
-            _inspectView?.Refresh();
+        {
+            _inspectView!.Filter = FilterInspectProperty;
+            _inspectView.Refresh();
+        }
         UpdateStatus();
     }
 
@@ -230,6 +268,52 @@ public partial class InspectorWindow : Window
             return prop.Name.Contains(search, StringComparison.OrdinalIgnoreCase);
 
         return true;
+    }
+
+    private void OnExportClick(object sender, RoutedEventArgs e)
+    {
+        string xaml;
+        if (_isCompareMode && _elementA != null && _elementB != null)
+        {
+            xaml = XamlExporter.ExportDiff(_elementA, _elementB, _compared);
+        }
+        else if (_elementA != null)
+        {
+            var hasEdits = _properties.Any(p => p.IsEdited);
+            xaml = XamlExporter.ExportStyle(_elementA, _properties, editedOnly: hasEdits);
+        }
+        else return;
+
+        Clipboard.SetText(xaml);
+        StatusText.Text = "XAML copied to clipboard";
+    }
+
+    private void OnCopySetterClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.DataContext is InspectedProperty prop)
+        {
+            Clipboard.SetText(XamlExporter.ExportSetter(prop));
+            StatusText.Text = $"Copied setter for {prop.Name}";
+        }
+    }
+
+    private void OnCopyValueClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.DataContext is InspectedProperty prop)
+        {
+            Clipboard.SetText(prop.DisplayValue);
+            StatusText.Text = $"Copied value of {prop.Name}";
+        }
+    }
+
+    private void OnCopyChainClick(object sender, RoutedEventArgs e)
+    {
+        if (StyleChainList.ItemsSource is not List<StyleChainEntry> chain) return;
+        var sb = new StringBuilder();
+        foreach (var entry in chain)
+            sb.AppendLine($"{entry.Label} — {entry.Detail}");
+        Clipboard.SetText(sb.ToString());
+        StatusText.Text = "Style chain copied to clipboard";
     }
 
     private void OnValueKeyDown(object sender, KeyEventArgs e)
