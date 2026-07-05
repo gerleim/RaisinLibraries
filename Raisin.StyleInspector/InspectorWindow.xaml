@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Raisin.StyleInspector"
         Title="Style Inspector"
-        Width="720" Height="650"
+        Width="900" Height="650"
         WindowStartupLocation="CenterOwner"
         Topmost="True"
         Background="#FF1E1E1E"
@@ -403,26 +403,77 @@
             </StackPanel>
         </Border>
 
-        <!-- Property list -->
-        <ListBox Grid.Row="4" x:Name="PropertyList"
-                 Background="#FF1E1E1E" BorderThickness="0"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 Grid.IsSharedSizeScope="True"
-                 VirtualizingPanel.IsVirtualizing="False">
+        <!-- Main content: Visual Tree + Property List -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="TreeColumn" Width="0"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <ListBox.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <Border Background="#FF2D2D30" Padding="8,3" Margin="0,2,0,0">
-                                <TextBlock Text="{Binding Name}" Foreground="#FF9CDCFE"
-                                           FontWeight="SemiBold" FontSize="11"/>
-                            </Border>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ListBox.GroupStyle>
-        </ListBox>
+            <!-- Visual tree panel -->
+            <DockPanel x:Name="TreePanel" Grid.Column="0" Visibility="Collapsed">
+                <Border DockPanel.Dock="Top" Background="#FF2D2D30" Padding="6,3"
+                        BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Visual Tree" Foreground="#FF9CDCFE"
+                                   FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                        <Button x:Name="TreeUpButton" Content="Up" Click="OnTreeUpClick"
+                                Padding="6,1" Margin="8,0,0,0" FontSize="10"
+                                Foreground="#FFCCCCCC" Background="#FF3E3E42" BorderBrush="#FF555555"
+                                ToolTip="Navigate to parent element"/>
+                    </StackPanel>
+                </Border>
+                <TreeView x:Name="VisualTreeView" Background="#FF1E1E1E" BorderThickness="0"
+                          SelectedItemChanged="OnTreeNodeSelected"
+                          VirtualizingPanel.IsVirtualizing="False">
+                    <TreeView.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FF264F78"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#FF264F78"/>
+                    </TreeView.Resources>
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="Foreground" Value="#FFD4D4D4"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="Padding" Value="2,1"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Label}" ToolTip="{Binding TypeName}"/>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </DockPanel>
+
+            <!-- Splitter -->
+            <GridSplitter x:Name="TreeSplitter" Grid.Column="1" Width="4"
+                          Background="#FF3F3F46" Visibility="Collapsed"
+                          HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+
+            <!-- Property list -->
+            <ListBox Grid.Column="2" x:Name="PropertyList"
+                     Background="#FF1E1E1E" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     Grid.IsSharedSizeScope="True"
+                     VirtualizingPanel.IsVirtualizing="False">
+
+                <ListBox.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <Border Background="#FF2D2D30" Padding="8,3" Margin="0,2,0,0">
+                                    <TextBlock Text="{Binding Name}" Foreground="#FF9CDCFE"
+                                               FontWeight="SemiBold" FontSize="11"/>
+                                </Border>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListBox.GroupStyle>
+            </ListBox>
+        </Grid>
 
         <!-- Status bar -->
         <Border Grid.Row="5" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">

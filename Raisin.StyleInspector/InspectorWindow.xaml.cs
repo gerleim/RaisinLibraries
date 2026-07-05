@@ -20,6 +20,9 @@ public partial class InspectorWindow : Window
     private FrameworkElement? _elementB;
     private bool _pickingB;
     private bool _isCompareMode;
+    private VisualTreeNode? _treeRoot;
+    private DependencyObject? _lastTreeRootElement;
+    private bool _suppressTreeSelection;
 
     public InspectorWindow()
     {
@@ -120,6 +123,8 @@ public partial class InspectorWindow : Window
         ElementDetail.Text = element.GetType().FullName;
         ElementInfoPanel.Visibility = Visibility.Visible;
 
+        BuildVisualTree(element);
+
         if (_elementB != null)
             RunCompare();
         else
@@ -136,6 +141,113 @@ public partial class InspectorWindow : Window
 
         if (_elementA != null)
             RunCompare();
+    }
+
+    private void BuildVisualTree(DependencyObject element)
+    {
+        try
+        {
+            DependencyObject root;
+            try
+            {
+                root = VisualTreeWalker.FindControlRoot(element);
+            }
+            catch
+            {
+                root = element;
+            }
+
+            if (!ReferenceEquals(root, _lastTreeRootElement) || _treeRoot == null)
+            {
+                _lastTreeRootElement = root;
+                _treeRoot = VisualTreeWalker.Build(root);
+
+                if (!_treeRoot.HasChildren && !ReferenceEquals(root, element))
+                {
+                    _treeRoot = VisualTreeWalker.Build(element);
+                    _lastTreeRootElement = element;
+                }
+
+                VisualTreeView.ItemsSource = new[] { _treeRoot };
+                _treeRoot.IsExpanded = true;
+            }
+
+            _suppressTreeSelection = true;
+            ClearTreeSelection(_treeRoot);
+            VisualTreeWalker.ExpandPathTo(_treeRoot, element);
+            _suppressTreeSelection = false;
+
+            TreePanel.Visibility = Visibility.Visible;
+            TreeSplitter.Visibility = Visibility.Visible;
+            if (TreeColumn.Width.Value < 10)
+                TreeColumn.Width = new GridLength(240);
+        }
+        catch (Exception ex)
+        {
+            TreePanel.Visibility = Visibility.Collapsed;
+            TreeSplitter.Visibility = Visibility.Collapsed;
+            TreeColumn.Width = new GridLength(0);
+            StatusText.Text = $"Tree: {ex.GetType().Name}: {ex.Message}";
+        }
+    }
+
+    private static void ClearTreeSelection(VisualTreeNode node)
+    {
+        node.IsSelected = false;
+        foreach (var child in node.Children)
+            ClearTreeSelection(child);
+    }
+
+    private void OnTreeNodeSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        if (_suppressTreeSelection) return;
+        if (e.NewValue is VisualTreeNode node && node.Element is FrameworkElement fe)
+        {
+            _elementA = fe;
+            var name = string.IsNullOrEmpty(fe.Name) ? "" : $" \"{fe.Name}\"";
+            ElementType.Text = $"{fe.GetType().Name}{name}";
+            ElementDetail.Text = fe.GetType().FullName;
+
+            if (_elementB != null)
+                RunCompare();
+            else
+                ShowInspectView(fe);
+        }
+    }
+
+    private void OnTreeUpClick(object sender, RoutedEventArgs e)
+    {
+        if (_elementA == null) return;
+        var parent = VisualTreeWalker.GetVisualParent(_elementA);
+        if (parent == null)
+        {
+            StatusText.Text = "Already at visual tree root";
+            return;
+        }
+
+        try
+        {
+            _treeRoot = VisualTreeWalker.Build(parent);
+            VisualTreeView.ItemsSource = new[] { _treeRoot };
+            _treeRoot.IsExpanded = true;
+
+            _suppressTreeSelection = true;
+            VisualTreeWalker.ExpandPathTo(_treeRoot, _elementA);
+            _suppressTreeSelection = false;
+
+            if (parent is FrameworkElement parentFe)
+            {
+                _elementA = parentFe;
+                var name = string.IsNullOrEmpty(parentFe.Name) ? "" : $" \"{parentFe.Name}\"";
+                ElementType.Text = $"{parentFe.GetType().Name}{name}";
+                ElementDetail.Text = parentFe.GetType().FullName;
+                ShowInspectView(parentFe);
+            }
+        }
+        catch
+        {
+            StatusText.Text = "Cannot navigate further up";
+        }
     }
 
     private void ShowInspectView(FrameworkElement element)
