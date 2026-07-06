@@ -154,6 +154,7 @@ public partial class InspectorWindow : Window
         {
             var root = VisualTreeWalker.FindAncestor(element, 5);
 
+            _suppressTreeSelection = true;
             if (!ReferenceEquals(root, _lastTreeRootElement) || _treeRoot == null)
             {
                 _lastTreeRootElement = root;
@@ -169,7 +170,6 @@ public partial class InspectorWindow : Window
                 _treeRoot.IsExpanded = true;
             }
 
-            _suppressTreeSelection = true;
             ClearTreeSelection(_treeRoot);
             VisualTreeWalker.ExpandPathTo(_treeRoot, element);
             _suppressTreeSelection = false;
@@ -225,18 +225,18 @@ public partial class InspectorWindow : Window
         try
         {
             var selectedElement = _elementA;
+            _suppressTreeSelection = true;
             _lastTreeRootElement = parent;
             _treeRoot = VisualTreeWalker.Build(parent);
             VisualTreeView.ItemsSource = new[] { _treeRoot };
             _treeRoot.IsExpanded = true;
-
-            _suppressTreeSelection = true;
             if (selectedElement != null)
                 VisualTreeWalker.ExpandPathTo(_treeRoot, selectedElement);
             _suppressTreeSelection = false;
         }
         catch
         {
+            _suppressTreeSelection = false;
             StatusText.Text = "Cannot navigate further up";
         }
     }
@@ -247,18 +247,19 @@ public partial class InspectorWindow : Window
 
         try
         {
-            var root = VisualTreeWalker.FindVisualRoot(_elementA);
+            var selectedElement = _elementA;
+            _suppressTreeSelection = true;
+            var root = VisualTreeWalker.FindVisualRoot(selectedElement);
             _lastTreeRootElement = root;
             _treeRoot = VisualTreeWalker.Build(root);
             VisualTreeView.ItemsSource = new[] { _treeRoot };
             _treeRoot.IsExpanded = true;
-
-            _suppressTreeSelection = true;
-            VisualTreeWalker.ExpandPathTo(_treeRoot, _elementA);
+            VisualTreeWalker.ExpandPathTo(_treeRoot, selectedElement);
             _suppressTreeSelection = false;
         }
         catch
         {
+            _suppressTreeSelection = false;
             StatusText.Text = "Cannot expand full tree";
         }
     }
@@ -269,6 +270,7 @@ public partial class InspectorWindow : Window
         {
             var root = VisualTreeWalker.FindAncestor(element, 5);
 
+            _suppressTreeSelectionB = true;
             if (!ReferenceEquals(root, _lastTreeRootElementB) || _treeRootB == null)
             {
                 _lastTreeRootElementB = root;
@@ -284,7 +286,6 @@ public partial class InspectorWindow : Window
                 _treeRootB.IsExpanded = true;
             }
 
-            _suppressTreeSelectionB = true;
             ClearTreeSelection(_treeRootB);
             VisualTreeWalker.ExpandPathTo(_treeRootB, element);
             _suppressTreeSelectionB = false;
@@ -331,18 +332,18 @@ public partial class InspectorWindow : Window
         try
         {
             var selectedElement = _elementB;
+            _suppressTreeSelectionB = true;
             _lastTreeRootElementB = parent;
             _treeRootB = VisualTreeWalker.Build(parent);
             VisualTreeBView.ItemsSource = new[] { _treeRootB };
             _treeRootB.IsExpanded = true;
-
-            _suppressTreeSelectionB = true;
             if (selectedElement != null)
                 VisualTreeWalker.ExpandPathTo(_treeRootB, selectedElement);
             _suppressTreeSelectionB = false;
         }
         catch
         {
+            _suppressTreeSelectionB = false;
             StatusText.Text = "Cannot navigate further up";
         }
     }
@@ -353,18 +354,19 @@ public partial class InspectorWindow : Window
 
         try
         {
-            var root = VisualTreeWalker.FindVisualRoot(_elementB);
+            var selectedElement = _elementB;
+            _suppressTreeSelectionB = true;
+            var root = VisualTreeWalker.FindVisualRoot(selectedElement);
             _lastTreeRootElementB = root;
             _treeRootB = VisualTreeWalker.Build(root);
             VisualTreeBView.ItemsSource = new[] { _treeRootB };
             _treeRootB.IsExpanded = true;
-
-            _suppressTreeSelectionB = true;
-            VisualTreeWalker.ExpandPathTo(_treeRootB, _elementB);
+            VisualTreeWalker.ExpandPathTo(_treeRootB, selectedElement);
             _suppressTreeSelectionB = false;
         }
         catch
         {
+            _suppressTreeSelectionB = false;
             StatusText.Text = "Cannot expand full tree";
         }
     }
@@ -378,10 +380,32 @@ public partial class InspectorWindow : Window
         foreach (var prop in PropertyEnumerator.Enumerate(element))
             _properties.Add(prop);
 
+        PopulateStyleOrigins(element);
         ShowStyleChain(element);
         UpdateStatus();
         UpdateResetAllVisibility();
         ExportButton.Visibility = Visibility.Visible;
+    }
+
+    private void PopulateStyleOrigins(FrameworkElement element)
+    {
+        var origins = StyleChainResolver.ResolveSetterOrigins(element);
+        foreach (var prop in _properties)
+        {
+            if (!origins.TryGetValue(prop.Name, out var setters) || setters.Count == 0)
+                continue;
+
+            prop.StyleOrigin = setters[0].StyleLabel;
+            var lines = new List<string>(setters.Count);
+            for (int i = 0; i < setters.Count; i++)
+            {
+                var s = setters[i];
+                var dict = s.DictionarySource != null ? $"  ({s.DictionarySource})" : "";
+                var suffix = i > 0 ? "  — overridden" : "";
+                lines.Add($"{s.StyleLabel} = {s.DisplayValue}{dict}{suffix}");
+            }
+            prop.OriginDetail = string.Join("\n", lines);
+        }
     }
 
     private void RunCompare()

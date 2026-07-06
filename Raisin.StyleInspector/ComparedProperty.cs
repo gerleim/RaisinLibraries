@@ -19,11 +19,13 @@ public class ComparedProperty
 
     public string? DisplayValueA { get; init; }
     public string? SourceTagA { get; init; }
+    public string? SourceTooltipA { get; init; }
     public Brush? SourceBrushA { get; init; }
     public Brush? ColorPreviewA { get; init; }
 
     public string? DisplayValueB { get; init; }
     public string? SourceTagB { get; init; }
+    public string? SourceTooltipB { get; init; }
     public Brush? SourceBrushB { get; init; }
     public Brush? ColorPreviewB { get; init; }
 

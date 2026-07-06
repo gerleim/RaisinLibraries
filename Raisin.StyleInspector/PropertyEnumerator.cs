@@ -11,6 +11,7 @@ internal static class PropertyEnumerator
     private static readonly Brush TemplateBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xC5, 0x86, 0xC0)));
     private static readonly Brush InheritedBrush = Freeze(new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0xB0)));
     private static readonly Brush LocalBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xCE, 0x91, 0x78)));
+    private static readonly Brush ThemeBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xDC, 0xDC, 0xAA)));
 
     private static SolidColorBrush Freeze(SolidColorBrush b) { b.Freeze(); return b; }
 
@@ -58,6 +59,7 @@ internal static class PropertyEnumerator
             DisplayValue = FormatValue(value, resourceKey),
             Source = source.BaseValueSource,
             SourceTag = GetSourceTag(source.BaseValueSource),
+            SourceTooltip = GetSourceTooltip(source.BaseValueSource),
             SourceBrush = GetSourceBrush(source.BaseValueSource),
             ColorPreview = GetColorPreview(value),
             ResourceKey = resourceKey,
@@ -66,10 +68,27 @@ internal static class PropertyEnumerator
         });
     }
 
+    internal static string GetSourceTooltip(BaseValueSource source) => source switch
+    {
+        BaseValueSource.Default => "Default — dependency property default value",
+        BaseValueSource.Inherited => "Inherited — inherited from a parent element",
+        BaseValueSource.DefaultStyle => "Theme — value from theme/generic style",
+        BaseValueSource.ImplicitStyleReference => "Implicit Style — value from a keyless style matching the element type",
+        BaseValueSource.Style => "Style — value set by an explicit style",
+        BaseValueSource.StyleTrigger => "Style Trigger — value set by a trigger in a style",
+        BaseValueSource.ParentTemplate => "Template — value from the parent's control template",
+        BaseValueSource.ParentTemplateTrigger => "Template Trigger — value set by a trigger in the parent template",
+        BaseValueSource.TemplateTrigger => "Template Trigger — value set by a trigger in a template",
+        BaseValueSource.Local => "Local — value set directly on the element instance",
+        _ => "Unknown value source",
+    };
+
     internal static string GetSourceTag(BaseValueSource source) => source switch
     {
         BaseValueSource.Default => "D",
         BaseValueSource.Inherited => "I",
+        BaseValueSource.DefaultStyle => "Th",
+        BaseValueSource.ImplicitStyleReference => "IS",
         BaseValueSource.Style => "S",
         BaseValueSource.StyleTrigger => "ST",
         BaseValueSource.ParentTemplate => "T",
@@ -83,7 +102,9 @@ internal static class PropertyEnumerator
     {
         BaseValueSource.Default => DefaultBrush,
         BaseValueSource.Inherited => InheritedBrush,
-        BaseValueSource.Style or BaseValueSource.StyleTrigger => StyleBrush,
+        BaseValueSource.DefaultStyle => ThemeBrush,
+        BaseValueSource.ImplicitStyleReference or BaseValueSource.Style
+            or BaseValueSource.StyleTrigger => StyleBrush,
         BaseValueSource.ParentTemplate or BaseValueSource.ParentTemplateTrigger
             or BaseValueSource.TemplateTrigger => TemplateBrush,
         BaseValueSource.Local => LocalBrush,

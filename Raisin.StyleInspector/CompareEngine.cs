@@ -33,10 +33,12 @@ internal static class CompareEngine
                 Diff = ClassifyDiff(pa, pb),
                 DisplayValueA = pa?.DisplayValue,
                 SourceTagA = pa?.SourceTag,
+                SourceTooltipA = pa?.SourceTooltip,
                 SourceBrushA = pa?.SourceBrush,
                 ColorPreviewA = pa?.ColorPreview,
                 DisplayValueB = pb?.DisplayValue,
                 SourceTagB = pb?.SourceTag,
+                SourceTooltipB = pb?.SourceTooltip,
                 SourceBrushB = pb?.SourceBrush,
                 ColorPreviewB = pb?.ColorPreview,
             });

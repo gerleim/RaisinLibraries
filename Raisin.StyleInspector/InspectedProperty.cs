@@ -11,6 +11,7 @@ public class InspectedProperty : INotifyPropertyChanged
     private string _displayValue = "";
     private BaseValueSource _source;
     private string _sourceTag = "";
+    private string _sourceTooltip = "";
     private Brush _sourceBrush = Brushes.Gray;
     private Brush? _colorPreview;
     private bool _isEdited;
@@ -20,6 +21,8 @@ public class InspectedProperty : INotifyPropertyChanged
     public required DependencyProperty Property { get; init; }
     public required DependencyObject Element { get; init; }
     public string? ResourceKey { get; init; }
+    public string? StyleOrigin { get; set; }
+    public string? OriginDetail { get; set; }
 
     public object? Value
     {
@@ -43,6 +46,12 @@ public class InspectedProperty : INotifyPropertyChanged
     {
         get => _sourceTag;
         set { _sourceTag = value; OnPropertyChanged(); }
+    }
+
+    public string SourceTooltip
+    {
+        get => _sourceTooltip;
+        set { _sourceTooltip = value; OnPropertyChanged(); }
     }
 
     public Brush SourceBrush
@@ -108,6 +117,7 @@ public class InspectedProperty : INotifyPropertyChanged
         DisplayValue = PropertyEnumerator.FormatValue(value, ResourceKey);
         Source = source.BaseValueSource;
         SourceTag = PropertyEnumerator.GetSourceTag(source.BaseValueSource);
+        SourceTooltip = PropertyEnumerator.GetSourceTooltip(source.BaseValueSource);
         SourceBrush = PropertyEnumerator.GetSourceBrush(source.BaseValueSource);
         ColorPreview = PropertyEnumerator.GetColorPreview(value);
     }

@@ -5,7 +5,7 @@ namespace Raisin.StyleInspector;
 
 internal static class VisualTreeWalker
 {
-    public static VisualTreeNode Build(DependencyObject element, int maxDepth = 50)
+    public static VisualTreeNode Build(DependencyObject element, int maxDepth = 100)
     {
         var node = CreateNode(element);
         if (maxDepth > 0)
@@ -55,21 +55,30 @@ internal static class VisualTreeWalker
 
     public static bool ExpandPathTo(VisualTreeNode root, DependencyObject target)
     {
-        if (root.Element == target)
-        {
-            root.IsSelected = true;
+        var path = new List<VisualTreeNode>();
+        if (!FindPath(root, target, path))
+            return false;
+
+        foreach (var node in path)
+            node.IsExpanded = true;
+
+        path[^1].IsSelected = true;
+        return true;
+    }
+
+    private static bool FindPath(VisualTreeNode node, DependencyObject target, List<VisualTreeNode> path)
+    {
+        path.Add(node);
+        if (node.Element == target)
             return true;
-        }
 
-        foreach (var child in root.Children)
+        foreach (var child in node.Children)
         {
-            if (ExpandPathTo(child, target))
-            {
-                root.IsExpanded = true;
+            if (FindPath(child, target, path))
                 return true;
-            }
         }
 
+        path.RemoveAt(path.Count - 1);
         return false;
     }
 

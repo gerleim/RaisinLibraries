@@ -89,10 +89,25 @@
                            Foreground="#FFCCCCCC" Margin="0,0,12,0"
                            VerticalAlignment="Center"/>
 
-                <TextBlock Grid.Column="1" Text="{Binding SourceTag}"
-                           Foreground="{Binding SourceBrush}"
-                           FontWeight="Bold" Margin="0,0,12,0" MinWidth="24"
-                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,12,0" MinWidth="24"
+                            VerticalAlignment="Center" ToolTip="{Binding OriginDetail}">
+                    <TextBlock Text="{Binding SourceTag}"
+                               Foreground="{Binding SourceBrush}"
+                               FontWeight="Bold"
+                               ToolTip="{Binding SourceTooltip}"/>
+                    <TextBlock Text="{Binding StyleOrigin}" Foreground="#FF666666" FontSize="10"
+                               Margin="4,0,0,0" MaxWidth="150" TextTrimming="CharacterEllipsis">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding StyleOrigin}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
 
                 <!-- Value editors -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -273,7 +288,8 @@
                 <TextBlock Grid.Column="1" Text="{Binding SourceTagA}"
                            Foreground="{Binding SourceBrushA}"
                            FontWeight="Bold" Margin="0,0,4,0"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           ToolTip="{Binding SourceTooltipA}"/>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="10" Height="10" Margin="0,0,3,0" CornerRadius="2"
                             Background="{Binding ColorPreviewA}"
@@ -299,7 +315,8 @@
                 <TextBlock Grid.Column="4" Text="{Binding SourceTagB}"
                            Foreground="{Binding SourceBrushB}"
                            FontWeight="Bold" Margin="0,0,4,0"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           ToolTip="{Binding SourceTooltipB}"/>
                 <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="10" Height="10" Margin="0,0,3,0" CornerRadius="2"
                             Background="{Binding ColorPreviewB}"
@@ -458,6 +475,18 @@
                                             <Binding Path="TriggerCount"/>
                                         </MultiBinding>
                                     </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock Text="{Binding DictionarySource}" FontSize="10"
+                                           Foreground="#FF608B4E" Margin="6,0,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DictionarySource}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
                                 </TextBlock>
                             </StackPanel>
                         </DataTemplate>
