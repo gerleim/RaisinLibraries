@@ -437,16 +437,18 @@ public partial class InspectorWindow : Window
 
     private void ShowTemplate(FrameworkElement element)
     {
-        var info = TemplateInspector.Resolve(element);
-        if (info == null)
+        var triggers = TemplateInspector.ResolveAllTriggers(element);
+        if (triggers.Count == 0)
         {
             TemplatePanel.Visibility = Visibility.Collapsed;
             return;
         }
 
-        TemplateTargetType.Text = info.TargetType;
-        TemplateDictSource.Text = info.DictionarySource ?? "";
-        TemplateTriggerList.ItemsSource = info.Triggers;
+        var templateInfo = TemplateInspector.ResolveTemplate(element);
+        TemplateTargetType.Text = templateInfo != null ? $"Template: {templateInfo.TargetType}" : "";
+        TemplateDictSource.Text = templateInfo?.DictionarySource ?? "";
+
+        TemplateTriggerList.ItemsSource = triggers;
         TemplatePanel.Visibility = Visibility.Visible;
     }
 

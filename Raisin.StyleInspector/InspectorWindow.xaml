@@ -496,17 +496,17 @@
             </StackPanel>
         </Border>
 
-        <!-- Template -->
+        <!-- Triggers -->
         <Border x:Name="TemplatePanel" Grid.Row="4" Background="#FF252526"
                 BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
                 Visibility="Collapsed">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                    <TextBlock Text="Template" Foreground="#FFC586C0" FontWeight="SemiBold" FontSize="11"/>
+                    <TextBlock Text="Triggers" Foreground="#FFC586C0" FontWeight="SemiBold" FontSize="11"/>
                     <TextBlock x:Name="TemplateTargetType" Foreground="#FFD4D4D4" FontSize="11" Margin="8,0,0,0"/>
                     <TextBlock x:Name="TemplateDictSource" Foreground="#FF608B4E" FontSize="10" Margin="6,0,0,0"/>
                 </StackPanel>
-                <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto"
+                <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto"
                               Margin="0,2,0,0">
                     <ItemsControl x:Name="TemplateTriggerList">
                         <ItemsControl.ItemTemplate>
@@ -528,6 +528,8 @@
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
+                                    <TextBlock Text="{Binding Source}" Foreground="#FF888888" FontSize="10"
+                                               Margin="0,0,6,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding Condition}" Foreground="#FFD4D4D4" FontSize="11"
                                                Cursor="Hand" MouseLeftButtonDown="OnTemplateTriggerClick"
                                                ToolTip="{Binding SettersTooltip}"/>

@@ -2,6 +2,7 @@ namespace Raisin.StyleInspector;
 
 public class TemplateTriggerInfo
 {
+    public required string Source { get; init; }
     public required string Condition { get; init; }
     public required List<string> Setters { get; init; }
     public required List<string> PropertyNames { get; init; }

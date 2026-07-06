@@ -7,39 +7,60 @@ public class TemplateInfo
 {
     public required string TargetType { get; init; }
     public string? DictionarySource { get; init; }
-    public List<TemplateTriggerInfo> Triggers { get; init; } = new();
 }
 
 internal static class TemplateInspector
 {
-    public static TemplateInfo? Resolve(FrameworkElement element)
+    public static TemplateInfo? ResolveTemplate(FrameworkElement element)
     {
         var template = (element as Control)?.Template;
         if (template == null) return null;
 
-        var info = new TemplateInfo
+        return new TemplateInfo
         {
             TargetType = template.TargetType?.Name ?? "?",
             DictionarySource = FindTemplateSource(element, template),
         };
-
-        foreach (var trigger in template.Triggers)
-        {
-            var triggerInfo = ResolveTrigger(trigger, element);
-            if (triggerInfo != null)
-                info.Triggers.Add(triggerInfo);
-        }
-
-        return info;
     }
 
-    private static TemplateTriggerInfo? ResolveTrigger(TriggerBase trigger, FrameworkElement element)
+    public static List<TemplateTriggerInfo> ResolveAllTriggers(FrameworkElement element)
+    {
+        var result = new List<TemplateTriggerInfo>();
+
+        // Style triggers from the BasedOn chain
+        var chain = StyleChainResolver.Resolve(element);
+        foreach (var entry in chain)
+        {
+            if (entry.Style == null || entry.Style.Triggers.Count == 0) continue;
+            foreach (var trigger in entry.Style.Triggers)
+            {
+                var info = ResolveTrigger(trigger, element, entry.Label);
+                if (info != null) result.Add(info);
+            }
+        }
+
+        // Template triggers
+        var template = (element as Control)?.Template;
+        if (template != null)
+        {
+            foreach (var trigger in template.Triggers)
+            {
+                var info = ResolveTrigger(trigger, element, "Template");
+                if (info != null) result.Add(info);
+            }
+        }
+
+        return result;
+    }
+
+    private static TemplateTriggerInfo? ResolveTrigger(TriggerBase trigger, FrameworkElement element, string source)
     {
         switch (trigger)
         {
             case System.Windows.Trigger t:
                 return new TemplateTriggerInfo
                 {
+                    Source = source,
                     Condition = FormatCondition(t),
                     Setters = t.Setters.OfType<Setter>().Select(FormatSetter).ToList(),
                     PropertyNames = ExtractPropertyNames(t.Setters),
@@ -56,6 +77,7 @@ internal static class TemplateInspector
                 var allOnSelf = mt.Conditions.All(c => string.IsNullOrEmpty(c.SourceName));
                 return new TemplateTriggerInfo
                 {
+                    Source = source,
                     Condition = string.Join(" AND ", conditions),
                     Setters = mt.Setters.OfType<Setter>().Select(FormatSetter).ToList(),
                     PropertyNames = ExtractPropertyNames(mt.Setters),
@@ -66,6 +88,7 @@ internal static class TemplateInspector
             case DataTrigger dt:
                 return new TemplateTriggerInfo
                 {
+                    Source = source,
                     Condition = $"[Binding] = {FormatValue(dt.Value)}",
                     Setters = dt.Setters.OfType<Setter>().Select(FormatSetter).ToList(),
                     PropertyNames = ExtractPropertyNames(dt.Setters),
@@ -76,6 +99,7 @@ internal static class TemplateInspector
                 var conditions = mdt.Conditions.Select(c => $"[Binding] = {FormatValue(c.Value)}");
                 return new TemplateTriggerInfo
                 {
+                    Source = source,
                     Condition = string.Join(" AND ", conditions),
                     Setters = mdt.Setters.OfType<Setter>().Select(FormatSetter).ToList(),
                     PropertyNames = ExtractPropertyNames(mdt.Setters),
@@ -85,6 +109,7 @@ internal static class TemplateInspector
             case EventTrigger et:
                 return new TemplateTriggerInfo
                 {
+                    Source = source,
                     Condition = $"Event: {et.RoutedEvent?.Name ?? "?"}",
                     Setters = [$"{et.Actions.Count} action(s)"],
                     PropertyNames = [],
