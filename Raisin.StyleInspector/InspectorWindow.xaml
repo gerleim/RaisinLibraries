@@ -356,6 +356,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -495,8 +496,53 @@
             </StackPanel>
         </Border>
 
+        <!-- Template -->
+        <Border x:Name="TemplatePanel" Grid.Row="4" Background="#FF252526"
+                BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
+                Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                    <TextBlock Text="Template" Foreground="#FFC586C0" FontWeight="SemiBold" FontSize="11"/>
+                    <TextBlock x:Name="TemplateTargetType" Foreground="#FFD4D4D4" FontSize="11" Margin="8,0,0,0"/>
+                    <TextBlock x:Name="TemplateDictSource" Foreground="#FF608B4E" FontSize="10" Margin="6,0,0,0"/>
+                </StackPanel>
+                <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto"
+                              Margin="0,2,0,0">
+                    <ItemsControl x:Name="TemplateTriggerList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,1">
+                                    <TextBlock Text="{Binding ActiveIndicator}" FontSize="9"
+                                               VerticalAlignment="Center" Width="12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#FF666666"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Foreground" Value="#FF4EC9B0"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                        <Setter Property="Foreground" Value="#FF555555"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Condition}" Foreground="#FFD4D4D4" FontSize="11"
+                                               Cursor="Hand" MouseLeftButtonDown="OnTemplateTriggerClick"
+                                               ToolTip="{Binding SettersTooltip}"/>
+                                    <TextBlock Text="{Binding SettersSummary}" FontSize="11"
+                                               Foreground="#FF666666" Margin="6,0,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+
         <!-- Main content: Visual Tree + Property List -->
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="TreeColumn" Width="0"/>
                 <ColumnDefinition Width="Auto"/>
@@ -510,8 +556,15 @@
                 <Border DockPanel.Dock="Top" Background="#FF2D2D30" Padding="6,3"
                         BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Visual Tree" Foreground="#FF9CDCFE"
+                        <TextBlock x:Name="TreePanelLabel" Text="Visual Tree" Foreground="#FF9CDCFE"
                                    FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                        <Button x:Name="TemplateTreeToggle" Click="OnTemplateTreeToggle"
+                                Padding="3,1" Margin="8,0,0,0"
+                                Background="#FF3E3E42" BorderBrush="#FF555555"
+                                ToolTip="Toggle template tree view">
+                            <TextBlock x:Name="TemplateTreeToggleText" Text="T"
+                                       Foreground="#FFC586C0" FontSize="10" FontWeight="Bold"/>
+                        </Button>
                         <Button x:Name="TreeUpButton" Click="OnTreeUpClick"
                                 Padding="3,1" Margin="8,0,0,0"
                                 Background="#FF3E3E42" BorderBrush="#FF555555"
@@ -612,7 +665,7 @@
         </Grid>
 
         <!-- Status bar -->
-        <Border Grid.Row="5" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
+        <Border Grid.Row="6" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
             <TextBlock x:Name="StatusText" Foreground="#FF888888" FontSize="11"
                        Text="Pick A to inspect, Pick B to compare"/>
         </Border>

@@ -26,6 +26,7 @@ public partial class InspectorWindow : Window
     private VisualTreeNode? _treeRootB;
     private DependencyObject? _lastTreeRootElementB;
     private bool _suppressTreeSelectionB;
+    private bool _templateTreeMode;
 
     public InspectorWindow()
     {
@@ -126,6 +127,7 @@ public partial class InspectorWindow : Window
         ElementDetail.Text = element.GetType().FullName;
         ElementInfoPanel.Visibility = Visibility.Visible;
 
+        ResetTemplateTreeMode();
         BuildVisualTree(element);
 
         if (_elementB != null)
@@ -382,6 +384,7 @@ public partial class InspectorWindow : Window
 
         PopulateStyleOrigins(element);
         ShowStyleChain(element);
+        ShowTemplate(element);
         UpdateStatus();
         UpdateResetAllVisibility();
         ExportButton.Visibility = Visibility.Visible;
@@ -420,6 +423,7 @@ public partial class InspectorWindow : Window
             _compared.Add(cp);
 
         StyleChainPanel.Visibility = Visibility.Collapsed;
+        TemplatePanel.Visibility = Visibility.Collapsed;
         ExportButton.Visibility = Visibility.Visible;
         UpdateStatus();
     }
@@ -429,6 +433,98 @@ public partial class InspectorWindow : Window
         var chain = StyleChainResolver.Resolve(element);
         StyleChainList.ItemsSource = chain;
         StyleChainPanel.Visibility = chain.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ShowTemplate(FrameworkElement element)
+    {
+        var info = TemplateInspector.Resolve(element);
+        if (info == null)
+        {
+            TemplatePanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        TemplateTargetType.Text = info.TargetType;
+        TemplateDictSource.Text = info.DictionarySource ?? "";
+        TemplateTriggerList.ItemsSource = info.Triggers;
+        TemplatePanel.Visibility = Visibility.Visible;
+    }
+
+    private void OnTemplateTriggerClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is TemplateTriggerInfo trigger &&
+            trigger.PropertyNames.Count > 0)
+        {
+            SearchBox.Text = "";
+            HideDefaultsBox.IsChecked = false;
+
+            var propSet = new HashSet<string>(trigger.PropertyNames, StringComparer.OrdinalIgnoreCase);
+            _inspectView!.Filter = obj =>
+                obj is InspectedProperty prop && propSet.Contains(prop.Name);
+            _inspectView.Refresh();
+            UpdateStatus();
+            StatusText.Text = $"Showing {trigger.PropertyNames.Count} properties from trigger \"{trigger.Condition}\"";
+        }
+    }
+
+    private void ResetTemplateTreeMode()
+    {
+        if (!_templateTreeMode) return;
+        _templateTreeMode = false;
+        TreePanelLabel.Text = "Visual Tree";
+        TreePanelLabel.Foreground = new System.Windows.Media.SolidColorBrush(
+            System.Windows.Media.Color.FromRgb(0x9C, 0xDC, 0xFE));
+        TemplateTreeToggleText.Text = "T";
+        TemplateTreeToggle.ToolTip = "Toggle template tree view";
+        TreeUpButton.Visibility = Visibility.Visible;
+        TreeExpandAllButton.Visibility = Visibility.Visible;
+    }
+
+    private void OnTemplateTreeToggle(object sender, RoutedEventArgs e)
+    {
+        if (_elementA == null) return;
+
+        _templateTreeMode = !_templateTreeMode;
+
+        if (_templateTreeMode)
+        {
+            var templateTree = VisualTreeWalker.BuildTemplateTree(_elementA);
+            if (templateTree == null)
+            {
+                _templateTreeMode = false;
+                StatusText.Text = "No template on this element";
+                return;
+            }
+
+            _suppressTreeSelection = true;
+            _treeRoot = templateTree;
+            VisualTreeView.ItemsSource = new[] { _treeRoot };
+            _treeRoot.IsExpanded = true;
+            foreach (var child in _treeRoot.Children)
+                child.IsExpanded = true;
+            _suppressTreeSelection = false;
+
+            TreePanelLabel.Text = "Template";
+            TreePanelLabel.Foreground = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(0xC5, 0x86, 0xC0));
+            TemplateTreeToggleText.Text = "V";
+            TemplateTreeToggle.ToolTip = "Switch to visual tree";
+            TreeUpButton.Visibility = Visibility.Collapsed;
+            TreeExpandAllButton.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            _lastTreeRootElement = null;
+            BuildVisualTree(_elementA);
+
+            TreePanelLabel.Text = "Visual Tree";
+            TreePanelLabel.Foreground = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(0x9C, 0xDC, 0xFE));
+            TemplateTreeToggleText.Text = "T";
+            TemplateTreeToggle.ToolTip = "Toggle template tree view";
+            TreeUpButton.Visibility = Visibility.Visible;
+            TreeExpandAllButton.Visibility = Visibility.Visible;
+        }
     }
 
     private void OnStyleChainEntryClick(object sender, MouseButtonEventArgs e)

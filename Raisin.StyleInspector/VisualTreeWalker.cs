@@ -1,10 +1,40 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace Raisin.StyleInspector;
 
 internal static class VisualTreeWalker
 {
+    public static VisualTreeNode? BuildTemplateTree(FrameworkElement element)
+    {
+        if (element is not Control control || control.Template == null)
+            return null;
+
+        var root = CreateNode(control);
+        AddTemplateChildren(root, control, control);
+        return root.Children.Count > 0 ? root : null;
+    }
+
+    private static void AddTemplateChildren(VisualTreeNode parent, DependencyObject current, Control owner)
+    {
+        try
+        {
+            var count = VisualTreeHelper.GetChildrenCount(current);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(current, i);
+                if (child is FrameworkElement fe && ReferenceEquals(fe.TemplatedParent, owner))
+                {
+                    var node = CreateNode(child);
+                    parent.Children.Add(node);
+                    AddTemplateChildren(node, child, owner);
+                }
+            }
+        }
+        catch { }
+    }
+
     public static VisualTreeNode Build(DependencyObject element, int maxDepth = 100)
     {
         var node = CreateNode(element);
