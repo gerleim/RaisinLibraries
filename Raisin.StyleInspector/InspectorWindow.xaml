@@ -268,6 +268,87 @@
             </Setter>
         </Style>
 
+        <!-- Style chain entry template (shared by A and B panels) -->
+        <DataTemplate x:Key="StyleChainEntryTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,1">
+                <TextBlock Text="{Binding Label}" Foreground="#FFD4D4D4" FontSize="11"
+                           Cursor="Hand" MouseLeftButtonDown="OnStyleChainEntryClick"
+                           ToolTip="{Binding Detail}"/>
+                <TextBlock FontSize="11" Foreground="#FF666666" Margin="6,0,0,0">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="({0}s, {1}t)">
+                            <Binding Path="SetterCount"/>
+                            <Binding Path="TriggerCount"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock Text="{Binding DictionaryLevel}" FontSize="9"
+                           FontWeight="SemiBold" Margin="6,0,0,0"
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="#FF888888"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DictionaryLevel}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DictionaryLevel}" Value="Theme">
+                                    <Setter Property="Foreground" Value="#FFDCDCAA"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DictionaryLevel}" Value="Library">
+                                    <Setter Property="Foreground" Value="#FF608B4E"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DictionaryLevel}" Value="Project">
+                                    <Setter Property="Foreground" Value="#FF569CD6"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Text="{Binding DictionarySource}" FontSize="10"
+                           Foreground="#FF888888" Margin="4,0,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DictionarySource}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Trigger entry template (shared by A and B panels) -->
+        <DataTemplate x:Key="TriggerEntryTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,1">
+                <TextBlock Text="{Binding ActiveIndicator}" FontSize="9"
+                           VerticalAlignment="Center" Width="12">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="#FF666666"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                    <Setter Property="Foreground" Value="#FF4EC9B0"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                    <Setter Property="Foreground" Value="#FF555555"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Text="{Binding Source}" Foreground="#FF888888" FontSize="10"
+                           Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Condition}" Foreground="#FFD4D4D4" FontSize="11"
+                           Cursor="Hand" MouseLeftButtonDown="OnTemplateTriggerClick"
+                           ToolTip="{Binding SettersTooltip}"/>
+                <TextBlock Text="{Binding SettersSummary}" FontSize="11"
+                           Foreground="#FF666666" Margin="6,0,0,0"/>
+            </StackPanel>
+        </DataTemplate>
+
         <!-- Compare mode template -->
         <DataTemplate x:Key="CompareTemplate" DataType="{x:Type local:ComparedProperty}">
             <Grid>
@@ -356,7 +437,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -425,126 +505,103 @@
             </StackPanel>
         </Border>
 
-        <!-- Element A info -->
-        <Border x:Name="ElementInfoPanel" Grid.Row="1" Background="#FF252526"
-                BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
-                Visibility="Collapsed">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="A " Foreground="#FF9CDCFE" FontWeight="Bold" FontSize="11"/>
-                    <TextBlock x:Name="ElementType" FontSize="13" Foreground="#FF9CDCFE"/>
+        <!-- Element info (A | B side by side) -->
+        <Grid x:Name="ElementInfoRow" Grid.Row="1" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="InfoBColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="#FF252526" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="A " Foreground="#FF9CDCFE" FontWeight="Bold" FontSize="11"/>
+                        <TextBlock x:Name="ElementType" FontSize="13" Foreground="#FF9CDCFE"/>
+                    </StackPanel>
+                    <TextBlock x:Name="ElementDetail" FontSize="11" Foreground="#FF666666" Margin="0,2,0,0"/>
                 </StackPanel>
-                <TextBlock x:Name="ElementDetail" FontSize="11" Foreground="#FF666666" Margin="0,2,0,0"/>
-            </StackPanel>
-        </Border>
+            </Border>
+            <Border Grid.Column="1" Background="#FF252526" BorderBrush="#FF3F3F46"
+                    BorderThickness="1,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="B " Foreground="#FFCE9178" FontWeight="Bold" FontSize="11"/>
+                        <TextBlock x:Name="ElementBType" FontSize="13" Foreground="#FFCE9178"/>
+                    </StackPanel>
+                    <TextBlock x:Name="ElementBDetail" FontSize="11" Foreground="#FF666666" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
-        <!-- Element B info -->
-        <Border x:Name="ElementBInfoPanel" Grid.Row="2" Background="#FF252526"
-                BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
-                Visibility="Collapsed">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="B " Foreground="#FFCE9178" FontWeight="Bold" FontSize="11"/>
-                    <TextBlock x:Name="ElementBType" FontSize="13" Foreground="#FFCE9178"/>
+        <!-- Style Chain (A | B side by side) -->
+        <Grid x:Name="StyleChainRow" Grid.Row="2" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="ChainBColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="#FF252526" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="Style Chain" Foreground="#FF9CDCFE" FontWeight="SemiBold" FontSize="11"/>
+                        <Button x:Name="CopyChainButton" Content="Copy" Click="OnCopyChainClick"
+                                Padding="4,0" Margin="8,0,0,0" FontSize="10"
+                                Foreground="#FF888888" Background="Transparent" BorderThickness="0"/>
+                    </StackPanel>
+                    <ItemsControl x:Name="StyleChainList"
+                                  ItemTemplate="{StaticResource StyleChainEntryTemplate}"/>
                 </StackPanel>
-                <TextBlock x:Name="ElementBDetail" FontSize="11" Foreground="#FF666666" Margin="0,2,0,0"/>
-            </StackPanel>
-        </Border>
+            </Border>
+            <Border Grid.Column="1" Background="#FF252526" BorderBrush="#FF3F3F46"
+                    BorderThickness="1,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="Style Chain" Foreground="#FFCE9178" FontWeight="SemiBold" FontSize="11"/>
+                        <Button x:Name="CopyChainBButton" Content="Copy" Click="OnCopyChainBClick"
+                                Padding="4,0" Margin="8,0,0,0" FontSize="10"
+                                Foreground="#FF888888" Background="Transparent" BorderThickness="0"/>
+                    </StackPanel>
+                    <ItemsControl x:Name="StyleChainBList"
+                                  ItemTemplate="{StaticResource StyleChainEntryTemplate}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
-        <!-- Style chain -->
-        <Border x:Name="StyleChainPanel" Grid.Row="3" Background="#FF252526"
-                BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
-                Visibility="Collapsed">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                    <TextBlock Text="Style Chain" Foreground="#FF9CDCFE" FontWeight="SemiBold" FontSize="11"/>
-                    <Button x:Name="CopyChainButton" Content="Copy" Click="OnCopyChainClick"
-                            Padding="4,0" Margin="8,0,0,0" FontSize="10"
-                            Foreground="#FF888888" Background="Transparent" BorderThickness="0"/>
+        <!-- Triggers (A | B side by side) -->
+        <Grid x:Name="TriggerRow" Grid.Row="3" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="TriggerBColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="#FF252526" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="Triggers" Foreground="#FFC586C0" FontWeight="SemiBold" FontSize="11"/>
+                        <TextBlock x:Name="TemplateTargetType" Foreground="#FFD4D4D4" FontSize="11" Margin="8,0,0,0"/>
+                        <TextBlock x:Name="TemplateDictSource" Foreground="#FF608B4E" FontSize="10" Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+                        <ItemsControl x:Name="TemplateTriggerList"
+                                      ItemTemplate="{StaticResource TriggerEntryTemplate}"/>
+                    </ScrollViewer>
                 </StackPanel>
-                <ItemsControl x:Name="StyleChainList">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0,1">
-                                <TextBlock Text="{Binding Label}" Foreground="#FFD4D4D4" FontSize="11"
-                                           Cursor="Hand" MouseLeftButtonDown="OnStyleChainEntryClick"
-                                           ToolTip="{Binding Detail}"/>
-                                <TextBlock FontSize="11" Foreground="#FF666666" Margin="6,0,0,0">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="({0}s, {1}t)">
-                                            <Binding Path="SetterCount"/>
-                                            <Binding Path="TriggerCount"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                                <TextBlock Text="{Binding DictionarySource}" FontSize="10"
-                                           Foreground="#FF608B4E" Margin="6,0,0,0">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DictionarySource}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
-
-        <!-- Triggers -->
-        <Border x:Name="TemplatePanel" Grid.Row="4" Background="#FF252526"
-                BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4"
-                Visibility="Collapsed">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                    <TextBlock Text="Triggers" Foreground="#FFC586C0" FontWeight="SemiBold" FontSize="11"/>
-                    <TextBlock x:Name="TemplateTargetType" Foreground="#FFD4D4D4" FontSize="11" Margin="8,0,0,0"/>
-                    <TextBlock x:Name="TemplateDictSource" Foreground="#FF608B4E" FontSize="10" Margin="6,0,0,0"/>
+            </Border>
+            <Border Grid.Column="1" Background="#FF252526" BorderBrush="#FF3F3F46"
+                    BorderThickness="1,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="Triggers" Foreground="#FFCE9178" FontWeight="SemiBold" FontSize="11"/>
+                        <TextBlock x:Name="TemplateBTargetType" Foreground="#FFD4D4D4" FontSize="11" Margin="8,0,0,0"/>
+                        <TextBlock x:Name="TemplateBDictSource" Foreground="#FF608B4E" FontSize="10" Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+                        <ItemsControl x:Name="TemplateTriggerBList"
+                                      ItemTemplate="{StaticResource TriggerEntryTemplate}"/>
+                    </ScrollViewer>
                 </StackPanel>
-                <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto"
-                              Margin="0,2,0,0">
-                    <ItemsControl x:Name="TemplateTriggerList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,1">
-                                    <TextBlock Text="{Binding ActiveIndicator}" FontSize="9"
-                                               VerticalAlignment="Center" Width="12">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="#FF666666"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                        <Setter Property="Foreground" Value="#FF4EC9B0"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                        <Setter Property="Foreground" Value="#FF555555"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding Source}" Foreground="#FF888888" FontSize="10"
-                                               Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Condition}" Foreground="#FFD4D4D4" FontSize="11"
-                                               Cursor="Hand" MouseLeftButtonDown="OnTemplateTriggerClick"
-                                               ToolTip="{Binding SettersTooltip}"/>
-                                    <TextBlock Text="{Binding SettersSummary}" FontSize="11"
-                                               Foreground="#FF666666" Margin="6,0,0,0"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </StackPanel>
-        </Border>
+            </Border>
+        </Grid>
 
         <!-- Main content: Visual Tree + Property List -->
-        <Grid Grid.Row="5">
+        <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="TreeColumn" Width="0"/>
                 <ColumnDefinition Width="Auto"/>
@@ -667,7 +724,7 @@
         </Grid>
 
         <!-- Status bar -->
-        <Border Grid.Row="6" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
+        <Border Grid.Row="5" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
             <TextBlock x:Name="StatusText" Foreground="#FF888888" FontSize="11"
                        Text="Pick A to inspect, Pick B to compare"/>
         </Border>

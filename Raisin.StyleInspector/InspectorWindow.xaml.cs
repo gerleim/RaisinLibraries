@@ -125,7 +125,7 @@ public partial class InspectorWindow : Window
         var name = string.IsNullOrEmpty(element.Name) ? "" : $" \"{element.Name}\"";
         ElementType.Text = $"{element.GetType().Name}{name}";
         ElementDetail.Text = element.GetType().FullName;
-        ElementInfoPanel.Visibility = Visibility.Visible;
+        ElementInfoRow.Visibility = Visibility.Visible;
 
         ResetTemplateTreeMode();
         BuildVisualTree(element);
@@ -142,7 +142,7 @@ public partial class InspectorWindow : Window
         var name = string.IsNullOrEmpty(element.Name) ? "" : $" \"{element.Name}\"";
         ElementBType.Text = $"{element.GetType().Name}{name}";
         ElementBDetail.Text = element.GetType().FullName;
-        ElementBInfoPanel.Visibility = Visibility.Visible;
+        ElementInfoRow.Visibility = Visibility.Visible;
 
         BuildVisualTreeB(element);
 
@@ -403,7 +403,8 @@ public partial class InspectorWindow : Window
             for (int i = 0; i < setters.Count; i++)
             {
                 var s = setters[i];
-                var dict = s.DictionarySource != null ? $"  ({s.DictionarySource})" : "";
+                var level = s.DictionaryLevel != null ? $"[{s.DictionaryLevel}] " : "";
+                var dict = s.DictionarySource != null ? $"  ({level}{s.DictionarySource})" : "";
                 var suffix = i > 0 ? "  — overridden" : "";
                 lines.Add($"{s.StyleLabel} = {s.DisplayValue}{dict}{suffix}");
             }
@@ -422,17 +423,49 @@ public partial class InspectorWindow : Window
         foreach (var cp in CompareEngine.Compare(_elementA, _elementB))
             _compared.Add(cp);
 
-        StyleChainPanel.Visibility = Visibility.Collapsed;
-        TemplatePanel.Visibility = Visibility.Collapsed;
+        ShowStyleChain(_elementA);
+        var chainB = StyleChainResolver.Resolve(_elementB);
+        StyleChainBList.ItemsSource = chainB;
+        if (chainB.Count > 0)
+            StyleChainRow.Visibility = Visibility.Visible;
+
+        ShowTemplate(_elementA);
+        var triggersB = TemplateInspector.ResolveAllTriggers(_elementB);
+        TemplateTriggerBList.ItemsSource = triggersB;
+        var templateInfoB = TemplateInspector.ResolveTemplate(_elementB);
+        TemplateBTargetType.Text = templateInfoB != null ? $"Template: {templateInfoB.TargetType}" : "";
+        TemplateBDictSource.Text = templateInfoB?.DictionarySource ?? "";
+        if (triggersB.Count > 0)
+            TriggerRow.Visibility = Visibility.Visible;
+
+        ShowBColumns();
         ExportButton.Visibility = Visibility.Visible;
         UpdateStatus();
+    }
+
+    private void ShowBColumns()
+    {
+        var star = new GridLength(1, GridUnitType.Star);
+        InfoBColumn.Width = star;
+        ChainBColumn.Width = star;
+        TriggerBColumn.Width = star;
+    }
+
+    private void HideBColumns()
+    {
+        var zero = new GridLength(0);
+        InfoBColumn.Width = zero;
+        ChainBColumn.Width = zero;
+        TriggerBColumn.Width = zero;
+        StyleChainBList.ItemsSource = null;
+        TemplateTriggerBList.ItemsSource = null;
     }
 
     private void ShowStyleChain(FrameworkElement element)
     {
         var chain = StyleChainResolver.Resolve(element);
         StyleChainList.ItemsSource = chain;
-        StyleChainPanel.Visibility = chain.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        StyleChainRow.Visibility = chain.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ShowTemplate(FrameworkElement element)
@@ -440,7 +473,7 @@ public partial class InspectorWindow : Window
         var triggers = TemplateInspector.ResolveAllTriggers(element);
         if (triggers.Count == 0)
         {
-            TemplatePanel.Visibility = Visibility.Collapsed;
+            TriggerRow.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -449,7 +482,7 @@ public partial class InspectorWindow : Window
         TemplateDictSource.Text = templateInfo?.DictionarySource ?? "";
 
         TemplateTriggerList.ItemsSource = triggers;
-        TemplatePanel.Visibility = Visibility.Visible;
+        TriggerRow.Visibility = Visibility.Visible;
     }
 
     private void OnTemplateTriggerClick(object sender, MouseButtonEventArgs e)
@@ -458,12 +491,23 @@ public partial class InspectorWindow : Window
             trigger.PropertyNames.Count > 0)
         {
             SearchBox.Text = "";
-            HideDefaultsBox.IsChecked = false;
-
             var propSet = new HashSet<string>(trigger.PropertyNames, StringComparer.OrdinalIgnoreCase);
-            _inspectView!.Filter = obj =>
-                obj is InspectedProperty prop && propSet.Contains(prop.Name);
-            _inspectView.Refresh();
+
+            if (_isCompareMode)
+            {
+                DiffsOnlyBox.IsChecked = false;
+                _compareView!.Filter = obj =>
+                    obj is ComparedProperty prop && propSet.Contains(prop.Name);
+                _compareView.Refresh();
+            }
+            else
+            {
+                HideDefaultsBox.IsChecked = false;
+                _inspectView!.Filter = obj =>
+                    obj is InspectedProperty prop && propSet.Contains(prop.Name);
+                _inspectView.Refresh();
+            }
+
             UpdateStatus();
             StatusText.Text = $"Showing {trigger.PropertyNames.Count} properties from trigger \"{trigger.Condition}\"";
         }
@@ -537,12 +581,23 @@ public partial class InspectorWindow : Window
             if (setters.Count > 0)
             {
                 SearchBox.Text = "";
-                HideDefaultsBox.IsChecked = false;
-
                 var setterSet = new HashSet<string>(setters, StringComparer.OrdinalIgnoreCase);
-                _inspectView!.Filter = obj =>
-                    obj is InspectedProperty prop && setterSet.Contains(prop.Name);
-                _inspectView.Refresh();
+
+                if (_isCompareMode)
+                {
+                    DiffsOnlyBox.IsChecked = false;
+                    _compareView!.Filter = obj =>
+                        obj is ComparedProperty prop && setterSet.Contains(prop.Name);
+                    _compareView.Refresh();
+                }
+                else
+                {
+                    HideDefaultsBox.IsChecked = false;
+                    _inspectView!.Filter = obj =>
+                        obj is InspectedProperty prop && setterSet.Contains(prop.Name);
+                    _inspectView.Refresh();
+                }
+
                 UpdateStatus();
                 StatusText.Text = $"Showing {setters.Count} properties from \"{entry.Label}\"";
             }
@@ -554,7 +609,7 @@ public partial class InspectorWindow : Window
         _elementB = null;
         _treeRootB = null;
         _lastTreeRootElementB = null;
-        ElementBInfoPanel.Visibility = Visibility.Collapsed;
+        HideBColumns();
         ClearBButton.Visibility = Visibility.Collapsed;
         DiffsOnlyBox.Visibility = Visibility.Collapsed;
         TreeBPanel.Visibility = Visibility.Collapsed;
@@ -666,12 +721,22 @@ public partial class InspectorWindow : Window
 
     private void OnCopyChainClick(object sender, RoutedEventArgs e)
     {
-        if (StyleChainList.ItemsSource is not List<StyleChainEntry> chain) return;
+        CopyChainToClipboard(StyleChainList, "A");
+    }
+
+    private void OnCopyChainBClick(object sender, RoutedEventArgs e)
+    {
+        CopyChainToClipboard(StyleChainBList, "B");
+    }
+
+    private void CopyChainToClipboard(ItemsControl list, string label)
+    {
+        if (list.ItemsSource is not List<StyleChainEntry> chain) return;
         var sb = new StringBuilder();
         foreach (var entry in chain)
             sb.AppendLine($"{entry.Label} — {entry.Detail}");
         Clipboard.SetText(sb.ToString());
-        StatusText.Text = "Style chain copied to clipboard";
+        StatusText.Text = $"Style chain {label} copied to clipboard";
     }
 
     private void OnValueKeyDown(object sender, KeyEventArgs e)

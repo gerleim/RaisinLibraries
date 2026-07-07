@@ -11,6 +11,7 @@ public class StyleChainEntry
     public int SetterCount { get; init; }
     public int TriggerCount { get; init; }
     public string? DictionarySource { get; init; }
+    public string? DictionaryLevel { get; init; }
 }
 
 public class StyleSetterInfo
@@ -18,6 +19,7 @@ public class StyleSetterInfo
     public required string StyleLabel { get; init; }
     public required string DisplayValue { get; init; }
     public string? DictionarySource { get; init; }
+    public string? DictionaryLevel { get; init; }
 }
 
 internal static class StyleChainResolver
@@ -58,7 +60,7 @@ internal static class StyleChainResolver
             var key = TryGetStyleKey(element, current, depth);
             var label = key ?? $"Style (depth {depth})";
             var targetType = current.TargetType?.Name ?? "?";
-            var dictSource = FindDictionarySource(element, current);
+            var (dictSource, dictLevel) = FindDictionaryInfo(element, current);
 
             chain.Add(new StyleChainEntry
             {
@@ -68,6 +70,7 @@ internal static class StyleChainResolver
                 SetterCount = current.Setters.Count,
                 TriggerCount = current.Triggers.Count,
                 DictionarySource = dictSource,
+                DictionaryLevel = dictLevel,
             });
 
             current = current.BasedOn;
@@ -99,6 +102,7 @@ internal static class StyleChainResolver
                     StyleLabel = entry.Label,
                     DisplayValue = PropertyEnumerator.FormatValue(setter.Value, null),
                     DictionarySource = entry.DictionarySource,
+                    DictionaryLevel = entry.DictionaryLevel,
                 });
             }
         }
@@ -119,13 +123,30 @@ internal static class StyleChainResolver
 
     internal static string? FindDictionarySource(DependencyObject element, Style style)
     {
+        var info = FindDictionaryInfo(element, style);
+        return info.source;
+    }
+
+    internal static string? FindDictionaryLevel(DependencyObject element, Style style)
+    {
+        var info = FindDictionaryInfo(element, style);
+        return info.level;
+    }
+
+    internal static (string? source, string? level) FindDictionaryInfo(DependencyObject element, Style style)
+    {
         DependencyObject? current = element;
         while (current != null)
         {
             if (current is FrameworkElement fe && fe.Resources.Count > 0)
             {
-                if (SearchDictForStyle(fe.Resources, style, out var source))
-                    return source ?? fe.GetType().Name;
+                if (SearchDictForStyle(fe.Resources, style, out var uri))
+                {
+                    if (uri == null)
+                        return (fe.GetType().Name, "Inline");
+                    var (display, level) = FormatDictionaryUri(uri);
+                    return (display, level);
+                }
             }
             try { current = VisualTreeHelper.GetParent(current); }
             catch { break; }
@@ -134,17 +155,22 @@ internal static class StyleChainResolver
         try
         {
             if (Application.Current?.Resources is { } appRes &&
-                SearchDictForStyle(appRes, style, out var appSource))
-                return appSource ?? "Application";
+                SearchDictForStyle(appRes, style, out var appUri))
+            {
+                if (appUri == null)
+                    return ("Application", "App");
+                var (display, level) = FormatDictionaryUri(appUri);
+                return (display, level);
+            }
         }
         catch { }
 
-        return null;
+        return (null, null);
     }
 
-    private static bool SearchDictForStyle(ResourceDictionary dict, Style style, out string? source, int depth = 0)
+    private static bool SearchDictForStyle(ResourceDictionary dict, Style style, out Uri? sourceUri, int depth = 0)
     {
-        source = null;
+        sourceUri = null;
         if (depth > 8) return false;
 
         foreach (var key in dict.Keys)
@@ -153,7 +179,7 @@ internal static class StyleChainResolver
             {
                 if (ReferenceEquals(dict[key], style))
                 {
-                    source = dict.Source != null ? ExtractFileName(dict.Source) : null;
+                    sourceUri = dict.Source;
                     return true;
                 }
             }
@@ -162,20 +188,68 @@ internal static class StyleChainResolver
 
         foreach (var merged in dict.MergedDictionaries)
         {
-            if (SearchDictForStyle(merged, style, out source, depth + 1))
+            if (SearchDictForStyle(merged, style, out sourceUri, depth + 1))
                 return true;
         }
 
         return false;
     }
 
-    private static string ExtractFileName(Uri uri)
+    private static readonly string? AppAssemblyName =
+        System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
+
+    private static (string display, string level) FormatDictionaryUri(Uri uri)
+    {
+        var (assembly, fileName) = ParsePackUri(uri);
+        var level = ClassifyAssembly(assembly);
+
+        string display;
+        if (assembly == null || string.Equals(assembly, AppAssemblyName, StringComparison.OrdinalIgnoreCase))
+            display = fileName;
+        else
+            display = $"{assembly}: {fileName}";
+
+        return (display, level);
+    }
+
+    private static (string? assembly, string fileName) ParsePackUri(Uri uri)
     {
         var path = uri.OriginalString;
-        var lastSlash = path.LastIndexOf('/');
-        var name = lastSlash >= 0 ? path[(lastSlash + 1)..] : path;
-        return name.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase)
-            ? name[..^5] : name;
+
+        var componentIdx = path.IndexOf(";component/", StringComparison.OrdinalIgnoreCase);
+        string? assembly = null;
+        string filePart;
+
+        if (componentIdx >= 0)
+        {
+            var beforeComponent = path[..componentIdx];
+            var lastSlash = beforeComponent.LastIndexOf('/');
+            assembly = lastSlash >= 0 ? beforeComponent[(lastSlash + 1)..] : beforeComponent;
+            filePart = path[(componentIdx + ";component/".Length)..];
+        }
+        else
+        {
+            filePart = path;
+        }
+
+        var lastFileSlash = filePart.LastIndexOf('/');
+        var name = lastFileSlash >= 0 ? filePart[(lastFileSlash + 1)..] : filePart;
+        if (name.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
+            name = name[..^5];
+
+        return (assembly, name);
+    }
+
+    private static string ClassifyAssembly(string? assembly)
+    {
+        if (assembly == null || string.Equals(assembly, AppAssemblyName, StringComparison.OrdinalIgnoreCase))
+            return "Project";
+
+        if (assembly.Contains("MaterialDesign", StringComparison.OrdinalIgnoreCase) ||
+            assembly.Contains("Theme", StringComparison.OrdinalIgnoreCase))
+            return "Theme";
+
+        return "Library";
     }
 
     private static int CountLocalValues(DependencyObject element)
