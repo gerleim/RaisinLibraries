@@ -424,16 +424,19 @@ public partial class InspectorWindow : Window
             _compared.Add(cp);
 
         ShowStyleChain(_elementA);
-        var chainB = StyleChainResolver.Resolve(_elementB);
+        var chainTargetB = _elementB.Style == null ? ResolveOwnerControl(_elementB) : _elementB;
+        var chainB = StyleChainResolver.Resolve(chainTargetB);
         StyleChainBList.ItemsSource = chainB;
         if (chainB.Count > 0)
             StyleChainRow.Visibility = Visibility.Visible;
 
         ShowTemplate(_elementA);
-        var triggersB = TemplateInspector.ResolveAllTriggers(_elementB);
+        var triggerTargetB = ResolveOwnerControl(_elementB);
+        var triggersB = TemplateInspector.ResolveAllTriggers(triggerTargetB);
         TemplateTriggerBList.ItemsSource = triggersB;
-        var templateInfoB = TemplateInspector.ResolveTemplate(_elementB);
-        TemplateBTargetType.Text = templateInfoB != null ? $"Template: {templateInfoB.TargetType}" : "";
+        var templateInfoB = TemplateInspector.ResolveTemplate(triggerTargetB);
+        var viaB = !ReferenceEquals(triggerTargetB, _elementB) ? $" (via {triggerTargetB.GetType().Name})" : "";
+        TemplateBTargetType.Text = templateInfoB != null ? $"Template: {templateInfoB.TargetType}{viaB}" : viaB.TrimStart();
         TemplateBDictSource.Text = templateInfoB?.DictionarySource ?? "";
         if (triggersB.Count > 0)
             TriggerRow.Visibility = Visibility.Visible;
@@ -461,24 +464,36 @@ public partial class InspectorWindow : Window
         TemplateTriggerBList.ItemsSource = null;
     }
 
+    private static FrameworkElement ResolveOwnerControl(FrameworkElement element)
+    {
+        if (element is Control)
+            return element;
+        if (element.TemplatedParent is FrameworkElement owner)
+            return owner;
+        return element;
+    }
+
     private void ShowStyleChain(FrameworkElement element)
     {
-        var chain = StyleChainResolver.Resolve(element);
+        var target = element.Style == null ? ResolveOwnerControl(element) : element;
+        var chain = StyleChainResolver.Resolve(target);
         StyleChainList.ItemsSource = chain;
         StyleChainRow.Visibility = chain.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ShowTemplate(FrameworkElement element)
     {
-        var triggers = TemplateInspector.ResolveAllTriggers(element);
+        var target = ResolveOwnerControl(element);
+        var triggers = TemplateInspector.ResolveAllTriggers(target);
         if (triggers.Count == 0)
         {
             TriggerRow.Visibility = Visibility.Collapsed;
             return;
         }
 
-        var templateInfo = TemplateInspector.ResolveTemplate(element);
-        TemplateTargetType.Text = templateInfo != null ? $"Template: {templateInfo.TargetType}" : "";
+        var templateInfo = TemplateInspector.ResolveTemplate(target);
+        var via = !ReferenceEquals(target, element) ? $" (via {target.GetType().Name})" : "";
+        TemplateTargetType.Text = templateInfo != null ? $"Template: {templateInfo.TargetType}{via}" : via.TrimStart();
         TemplateDictSource.Text = templateInfo?.DictionarySource ?? "";
 
         TemplateTriggerList.ItemsSource = triggers;
