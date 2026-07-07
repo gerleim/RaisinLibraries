@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Raisin.StyleInspector;
 
@@ -27,6 +28,7 @@ public partial class InspectorWindow : Window
     private DependencyObject? _lastTreeRootElementB;
     private bool _suppressTreeSelectionB;
     private bool _templateTreeMode;
+    private DispatcherTimer? _triggerTimer;
 
     public InspectorWindow()
     {
@@ -498,6 +500,26 @@ public partial class InspectorWindow : Window
 
         TemplateTriggerList.ItemsSource = triggers;
         TriggerRow.Visibility = Visibility.Visible;
+        StartTriggerTimer();
+    }
+
+    private void StartTriggerTimer()
+    {
+        if (_triggerTimer != null) return;
+        _triggerTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _triggerTimer.Tick += (_, _) =>
+        {
+            RefreshTriggerStates(TemplateTriggerList);
+            RefreshTriggerStates(TemplateTriggerBList);
+        };
+        _triggerTimer.Start();
+    }
+
+    private static void RefreshTriggerStates(ItemsControl list)
+    {
+        if (list.ItemsSource is not List<TemplateTriggerInfo> triggers) return;
+        foreach (var t in triggers)
+            t.Refresh();
     }
 
     private void OnTemplateTriggerClick(object sender, MouseButtonEventArgs e)
@@ -827,6 +849,8 @@ public partial class InspectorWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        _triggerTimer?.Stop();
+        _triggerTimer = null;
         StopPicking();
         base.OnClosed(e);
     }

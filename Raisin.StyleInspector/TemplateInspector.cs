@@ -58,15 +58,18 @@ internal static class TemplateInspector
         switch (trigger)
         {
             case System.Windows.Trigger t:
+            {
+                var canCheck = string.IsNullOrEmpty(t.SourceName);
                 return new TemplateTriggerInfo
                 {
                     Source = source,
                     Condition = FormatCondition(t),
                     Setters = t.Setters.OfType<Setter>().Select(FormatSetter).ToList(),
                     PropertyNames = ExtractPropertyNames(t.Setters),
-                    IsActive = string.IsNullOrEmpty(t.SourceName)
-                        ? CheckActive(element, t.Property, t.Value) : null,
+                    IsActive = canCheck ? CheckActive(element, t.Property, t.Value) : null,
+                    Evaluator = canCheck ? () => CheckActive(element, t.Property, t.Value) : null,
                 };
+            }
 
             case MultiTrigger mt:
             {
@@ -82,6 +85,7 @@ internal static class TemplateInspector
                     Setters = mt.Setters.OfType<Setter>().Select(FormatSetter).ToList(),
                     PropertyNames = ExtractPropertyNames(mt.Setters),
                     IsActive = allOnSelf ? CheckMultiActive(element, mt) : null,
+                    Evaluator = allOnSelf ? () => CheckMultiActive(element, mt) : null,
                 };
             }
 
