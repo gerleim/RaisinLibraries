@@ -514,13 +514,20 @@
                                Placement="Bottom" AllowsTransparency="True"
                                Focusable="False" PopupAnimation="None"
                                MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
-                            <Border x:Name="DropdownBorder" Background="#2D2D30" BorderBrush="#3F3F46"
-                                    BorderThickness="1" MaxHeight="300" Margin="0,1,0,0"
-                                    Opacity="0">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
-                                </ScrollViewer>
-                            </Border>
+                            <Grid x:Name="DropdownBorder" MaxHeight="300" Margin="6,1,6,6"
+                                  Opacity="0">
+                                <Border BorderBrush="#111111" BorderThickness="1">
+                                    <Border.Effect>
+                                        <BlurEffect Radius="6"/>
+                                    </Border.Effect>
+                                </Border>
+                                <Border Background="#2D2D30" BorderBrush="#3F3F46"
+                                        BorderThickness="1" Margin="1">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
