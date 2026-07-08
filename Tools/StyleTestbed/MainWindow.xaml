@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:controls="clr-namespace:Raisin.WPF.Base.Controls;assembly=Raisin.WPF.Base"
         Title="Style Testbed" Width="900" Height="700"
         Background="#1E1E1E">
     <Window.Resources>
@@ -60,19 +61,19 @@
             <TextBlock Text="FieldCombo (ComboBox)" Style="{StaticResource GroupHeader}"/>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Text="Default" Style="{StaticResource StateLabel}"/>
-                <ComboBox Style="{StaticResource FieldCombo}" Width="200"
+                <controls:FieldComboBox Style="{StaticResource FieldCombo}" Width="200"
                           ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Text="Disabled" Style="{StaticResource StateLabel}"/>
-                <ComboBox Style="{StaticResource FieldCombo}" Width="200"
+                <controls:FieldComboBox Style="{StaticResource FieldCombo}" Width="200"
                           ItemsSource="{StaticResource SampleItems}" SelectedIndex="1" IsEnabled="False"/>
             </StackPanel>
             <TextBlock Text="Tab / click to test hover (#7EB4EA), focus (#569DE5), dropdown fade:" Foreground="#666666" FontSize="10" Margin="0,4,0,4"/>
             <StackPanel Orientation="Horizontal">
-                <ComboBox Style="{StaticResource FieldCombo}" Width="150" Margin="0,0,8,0"
+                <controls:FieldComboBox Style="{StaticResource FieldCombo}" Width="150" Margin="0,0,8,0"
                           ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
-                <ComboBox Style="{StaticResource FieldCombo}" Width="150"
+                <controls:FieldComboBox Style="{StaticResource FieldCombo}" Width="150"
                           ItemsSource="{StaticResource SampleItems}" SelectedIndex="2"/>
             </StackPanel>
 
@@ -152,7 +153,7 @@
                         <TextBlock Text="FORM STYLE" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <TextBlock Text="Label" Style="{StaticResource FieldLabel}"/>
                         <TextBox Text="Form field" Style="{StaticResource FieldBox}" Margin="0,0,0,8"/>
-                        <ComboBox Style="{StaticResource FieldCombo}"
+                        <controls:FieldComboBox Style="{StaticResource FieldCombo}"
                                   ItemsSource="{StaticResource SampleItems}" SelectedIndex="0" Margin="0,0,0,8"/>
                         <Button Content="Action" Style="{StaticResource SmallButton}" HorizontalAlignment="Left"/>
                     </StackPanel>

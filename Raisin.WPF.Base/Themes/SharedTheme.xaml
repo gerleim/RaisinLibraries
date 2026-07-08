@@ -440,7 +440,7 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="FieldCombo" TargetType="ComboBox">
+    <Style x:Key="FieldCombo" TargetType="controls:FieldComboBox">
         <Setter Property="Background" Value="#2D2D30"/>
         <Setter Property="Foreground" Value="#CCCCCC"/>
         <Setter Property="BorderBrush" Value="#3F3F46"/>
@@ -472,9 +472,9 @@
         </Setter>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ComboBox">
+                <ControlTemplate TargetType="controls:FieldComboBox">
                     <Grid SnapsToDevicePixels="True">
-                        <ToggleButton x:Name="toggleButton" Focusable="False" Style="{x:Null}"
+                        <ToggleButton Focusable="False" Style="{x:Null}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
@@ -483,7 +483,15 @@
                                             Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                             BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                             BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                            SnapsToDevicePixels="True"/>
+                                            Padding="{Binding Padding, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            TextElement.Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            SnapsToDevicePixels="True">
+                                        <ContentPresenter IsHitTestVisible="False"
+                                                          Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                          ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                          ContentStringFormat="{Binding SelectionBoxItemStringFormat, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                          VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="Bd" Property="BorderBrush" Value="#7EB4EA"/>
@@ -498,12 +506,6 @@
                                 </ControlTemplate>
                             </ToggleButton.Template>
                         </ToggleButton>
-                        <ContentPresenter IsHitTestVisible="False"
-                                          Content="{TemplateBinding SelectionBoxItem}"
-                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                          ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center" HorizontalAlignment="Left"/>
                         <Path Data="M0,0 L4,4 8,0" Stroke="#999999" StrokeThickness="1.5"
                               HorizontalAlignment="Right" VerticalAlignment="Center"
                               Margin="0,0,8,0" IsHitTestVisible="False"/>
