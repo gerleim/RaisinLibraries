@@ -1,6 +1,6 @@
 namespace Raisin.WPF.Base.Models;
 
-public class DocumentState
+public class DocumentState : IUndoRecord
 {
     public string Type { get; set; } = "";
     public string ContentId { get; set; } = "";
@@ -12,4 +12,6 @@ public class DocumentState
     public double FloatingTop { get; set; }
     public double FloatingWidth { get; set; }
     public double FloatingHeight { get; set; }
+
+    string? IUndoRecord.ContentId => ContentId;
 }

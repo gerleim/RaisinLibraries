@@ -27,7 +27,12 @@
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
-    <PackageReference Include="Raisin.AvalonDock" Version="4.72.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseProjectReferences)' != 'false'">
+    <ProjectReference Include="..\..\LibrariesExternal\AvalonDock\source\Components\AvalonDock\AvalonDock.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+    <PackageReference Include="Raisin.AvalonDock" Version="4.72.6" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseProjectReferences)' != 'false'">
     <ProjectReference Include="..\Raisin.App.Base\Raisin.App.Base.csproj" />
