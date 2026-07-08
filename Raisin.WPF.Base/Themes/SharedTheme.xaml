@@ -455,13 +455,32 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ComboBoxItem">
-                                <Border x:Name="Bd" Background="Transparent"
-                                        Padding="6,4" SnapsToDevicePixels="True">
+                                <Border x:Name="Bd" Padding="6,4" SnapsToDevicePixels="True">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="#3E3E42" Opacity="0"/>
+                                    </Border.Background>
                                     <ContentPresenter VerticalAlignment="Center"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsHighlighted" Value="True">
-                                        <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bd"
+                                                        Storyboard.TargetProperty="Background.Opacity"
+                                                        To="1" Duration="0:0:0.12"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bd"
+                                                        Storyboard.TargetProperty="Background.Opacity"
+                                                        To="0" Duration="0:0:0.3"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
