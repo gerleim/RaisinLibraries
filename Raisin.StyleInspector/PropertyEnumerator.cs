@@ -19,6 +19,7 @@ internal static class PropertyEnumerator
     {
         var results = new List<InspectedProperty>();
         var seen = new HashSet<DependencyProperty>();
+        var resourceIndex = BuildResourceIndex(element);
 
         var fields = element.GetType()
             .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
@@ -28,7 +29,7 @@ internal static class PropertyEnumerator
         {
             var dp = (DependencyProperty)field.GetValue(null)!;
             if (!seen.Add(dp)) continue;
-            try { AddProperty(results, element, dp, field.DeclaringType?.Name ?? "Other"); }
+            try { AddProperty(results, element, dp, field.DeclaringType?.Name ?? "Other", resourceIndex); }
             catch { }
         }
 
@@ -37,7 +38,7 @@ internal static class PropertyEnumerator
         {
             var entry = localEnum.Current;
             if (!seen.Add(entry.Property)) continue;
-            try { AddProperty(results, element, entry.Property, entry.Property.OwnerType.Name); }
+            try { AddProperty(results, element, entry.Property, entry.Property.OwnerType.Name, resourceIndex); }
             catch { }
         }
 
@@ -45,11 +46,12 @@ internal static class PropertyEnumerator
     }
 
     private static void AddProperty(List<InspectedProperty> results, DependencyObject element,
-        DependencyProperty dp, string category)
+        DependencyProperty dp, string category, Dictionary<object, string> resourceIndex)
     {
         var value = element.GetValue(dp);
         var source = DependencyPropertyHelper.GetValueSource(element, dp);
-        var resourceKey = TryGetResourceKey(element, dp);
+        var resourceKey = TryGetResourceKey(element, dp)
+            ?? LookupResourceKey(value, resourceIndex);
 
         results.Add(new InspectedProperty
         {
@@ -224,5 +226,53 @@ internal static class PropertyEnumerator
         }
         catch { }
         return null;
+    }
+
+    private static string? LookupResourceKey(object? value, Dictionary<object, string> index)
+    {
+        if (value == null || value is string || value is ValueType) return null;
+        return index.TryGetValue(value, out var key) ? key : null;
+    }
+
+    private static Dictionary<object, string> BuildResourceIndex(DependencyObject element)
+    {
+        var index = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
+
+        DependencyObject? current = element;
+        while (current != null)
+        {
+            if (current is FrameworkElement fe && fe.Resources.Count > 0)
+                IndexDictionary(fe.Resources, index);
+            try { current = VisualTreeHelper.GetParent(current); }
+            catch { break; }
+        }
+
+        try
+        {
+            if (Application.Current?.Resources is { } appRes)
+                IndexDictionary(appRes, index);
+        }
+        catch { }
+
+        return index;
+    }
+
+    private static void IndexDictionary(ResourceDictionary dict, Dictionary<object, string> index, int depth = 0)
+    {
+        if (depth > 8) return;
+
+        foreach (var key in dict.Keys)
+        {
+            try
+            {
+                var val = dict[key];
+                if (val != null && key is string strKey && !index.ContainsKey(val))
+                    index[val] = strKey;
+            }
+            catch { }
+        }
+
+        foreach (var merged in dict.MergedDictionaries)
+            IndexDictionary(merged, index, depth + 1);
     }
 }
