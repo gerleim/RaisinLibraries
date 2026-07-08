@@ -320,6 +320,68 @@
             </StackPanel>
         </DataTemplate>
 
+        <!-- Binding entry template (shared by A and B panels) -->
+        <DataTemplate x:Key="BindingEntryTemplate">
+            <Grid ToolTip="{Binding Tooltip}" Margin="0,1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding StatusIndicator}" Foreground="{Binding StatusBrush}"
+                           FontSize="9" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding PropertyName}"
+                           Foreground="#FFCCCCCC" FontSize="11" Margin="0,0,8,0"
+                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Path}" Foreground="#FFD4D4D4" FontSize="11"/>
+                    <TextBlock Text="{Binding SourceDescription}" Foreground="#FF888888"
+                               FontSize="10" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock FontSize="10" Foreground="#FFC586C0" Margin="6,0,0,0"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <Binding Path="Converter" StringFormat="[{0}]"/>
+                        </TextBlock.Text>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Converter}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock FontSize="10" Foreground="#FF608B4E" Margin="6,0,0,0"
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{Binding Mode}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Mode}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding CurrentValue}" Foreground="#FF666666"
+                               FontSize="10" Margin="6,0,0,0" VerticalAlignment="Center"
+                               MaxWidth="200" TextTrimming="CharacterEllipsis">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentValue}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
         <!-- Trigger entry template (shared by A and B panels) -->
         <DataTemplate x:Key="TriggerEntryTemplate">
             <StackPanel Orientation="Horizontal" Margin="0,1">
@@ -433,6 +495,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -600,8 +663,37 @@
             </Border>
         </Grid>
 
+        <!-- Bindings (A | B side by side) -->
+        <Grid x:Name="BindingRow" Grid.Row="4" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="BindingBColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="#FF252526" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <TextBlock Text="Bindings" Foreground="#FF4EC9B0" FontWeight="SemiBold" FontSize="11"
+                               Margin="0,0,0,2"/>
+                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+                        <ItemsControl x:Name="BindingList"
+                                      ItemTemplate="{StaticResource BindingEntryTemplate}"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Background="#FF252526" BorderBrush="#FF3F3F46"
+                    BorderThickness="1,0,0,1" Padding="8,4">
+                <StackPanel>
+                    <TextBlock Text="Bindings" Foreground="#FFCE9178" FontWeight="SemiBold" FontSize="11"
+                               Margin="0,0,0,2"/>
+                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+                        <ItemsControl x:Name="BindingBList"
+                                      ItemTemplate="{StaticResource BindingEntryTemplate}"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <!-- Main content: Visual Tree + Property List -->
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="TreeColumn" Width="0"/>
                 <ColumnDefinition Width="Auto"/>
@@ -724,7 +816,7 @@
         </Grid>
 
         <!-- Status bar -->
-        <Border Grid.Row="5" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
+        <Border Grid.Row="6" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0" Padding="8,3">
             <TextBlock x:Name="StatusText" Foreground="#FF888888" FontSize="11"
                        Text="Pick A to inspect, Pick B to compare"/>
         </Border>

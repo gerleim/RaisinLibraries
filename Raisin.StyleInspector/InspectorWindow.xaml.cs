@@ -387,6 +387,7 @@ public partial class InspectorWindow : Window
         PopulateStyleOrigins(element);
         ShowStyleChain(element);
         ShowTemplate(element);
+        ShowBindings(element);
         UpdateStatus();
         UpdateResetAllVisibility();
         ExportButton.Visibility = Visibility.Visible;
@@ -443,6 +444,12 @@ public partial class InspectorWindow : Window
         if (triggersB.Count > 0)
             TriggerRow.Visibility = Visibility.Visible;
 
+        ShowBindings(_elementA);
+        var bindingsB = BindingInspector.ResolveBindings(_elementB);
+        BindingBList.ItemsSource = bindingsB;
+        if (bindingsB.Count > 0)
+            BindingRow.Visibility = Visibility.Visible;
+
         ShowBColumns();
         ExportButton.Visibility = Visibility.Visible;
         UpdateStatus();
@@ -454,6 +461,7 @@ public partial class InspectorWindow : Window
         InfoBColumn.Width = star;
         ChainBColumn.Width = star;
         TriggerBColumn.Width = star;
+        BindingBColumn.Width = star;
     }
 
     private void HideBColumns()
@@ -462,8 +470,10 @@ public partial class InspectorWindow : Window
         InfoBColumn.Width = zero;
         ChainBColumn.Width = zero;
         TriggerBColumn.Width = zero;
+        BindingBColumn.Width = zero;
         StyleChainBList.ItemsSource = null;
         TemplateTriggerBList.ItemsSource = null;
+        BindingBList.ItemsSource = null;
     }
 
     private static FrameworkElement ResolveOwnerControl(FrameworkElement element)
@@ -501,6 +511,13 @@ public partial class InspectorWindow : Window
         TemplateTriggerList.ItemsSource = triggers;
         TriggerRow.Visibility = Visibility.Visible;
         StartTriggerTimer();
+    }
+
+    private void ShowBindings(FrameworkElement element)
+    {
+        var bindings = BindingInspector.ResolveBindings(element);
+        BindingList.ItemsSource = bindings;
+        BindingRow.Visibility = bindings.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void StartTriggerTimer()
