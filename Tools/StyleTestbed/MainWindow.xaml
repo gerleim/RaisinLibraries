@@ -130,8 +130,45 @@
                 </DockPanel>
             </StackPanel>
 
+            <!-- FieldDropdown (multi-select, form style) -->
+            <TextBlock Text="FieldDropdown (MultiSelectDropdown)" Style="{StaticResource GroupHeader}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Text="Default" Style="{StaticResource StateLabel}"/>
+                <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Width="200"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Text="Disabled" Style="{StaticResource StateLabel}"/>
+                <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Width="200"
+                    ItemsSource="{Binding SampleFilterItems}" IsEnabled="False"/>
+            </StackPanel>
+            <TextBlock Text="Sharp corners, #3F3F46 border — matches FieldCombo for detail forms:" Foreground="#666666" FontSize="10" Margin="0,4,0,4"/>
+            <StackPanel Orientation="Horizontal">
+                <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Width="150" Margin="0,0,8,0"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+                <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Width="150"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+            </StackPanel>
+
+            <!-- FilterDropdown (multi-select, filter bar style) -->
+            <TextBlock Text="FilterDropdown (MultiSelectDropdown)" Style="{StaticResource GroupHeader}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Text="Default" Style="{StaticResource StateLabel}"/>
+                <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Width="200"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+            </StackPanel>
+            <TextBlock Text="Rounded corners, #555555 border — for filter bars and toolbars:" Foreground="#666666" FontSize="10" Margin="0,4,0,4"/>
+            <StackPanel Orientation="Horizontal">
+                <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Width="120" Margin="0,0,8,0"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+                <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Width="120" Margin="0,0,8,0"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+                <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Width="120"
+                    ItemsSource="{Binding SampleFilterItems}"/>
+            </StackPanel>
+
             <!-- FilterComboBox -->
-            <TextBlock Text="FilterComboBox (MD-based)" Style="{StaticResource GroupHeader}"/>
+            <TextBlock Text="FilterComboBox (MD-based, single-select)" Style="{StaticResource GroupHeader}"/>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Text="Default" Style="{StaticResource StateLabel}"/>
                 <ComboBox Style="{StaticResource FilterComboBox}" Width="120"
@@ -139,8 +176,8 @@
             </StackPanel>
 
             <!-- Side by side -->
-            <TextBlock Text="Side-by-Side: Form vs Filter (future)" Style="{StaticResource GroupHeader}"/>
-            <TextBlock Text="Form controls (sharp corners, #3F3F46 border) vs filter variants (rounded, different border)" Foreground="#666666" FontSize="10" Margin="0,0,0,8"/>
+            <TextBlock Text="Side-by-Side: Form vs Filter" Style="{StaticResource GroupHeader}"/>
+            <TextBlock Text="Form controls (sharp corners, #3F3F46 border) vs filter variants (rounded, #555555 border)" Foreground="#666666" FontSize="10" Margin="0,0,0,8"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -151,10 +188,14 @@
                 <Border Grid.Column="0" BorderBrush="#333333" BorderThickness="1" Padding="16,12" Background="#252526">
                     <StackPanel>
                         <TextBlock Text="FORM STYLE" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Label" Style="{StaticResource FieldLabel}"/>
-                        <TextBox Text="Form field" Style="{StaticResource FieldBox}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Single-select" Style="{StaticResource FieldLabel}"/>
                         <controls:FieldComboBox Style="{StaticResource FieldCombo}"
                                   ItemsSource="{StaticResource SampleItems}" SelectedIndex="0" Margin="0,0,0,8"/>
+                        <TextBlock Text="Multi-select" Style="{StaticResource FieldLabel}"/>
+                        <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Margin="0,0,0,8"
+                            ItemsSource="{Binding SampleFilterItems}"/>
+                        <TextBlock Text="Text field" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="Form field" Style="{StaticResource FieldBox}" Margin="0,0,0,8"/>
                         <Button Content="Action" Style="{StaticResource SmallButton}" HorizontalAlignment="Left"/>
                     </StackPanel>
                 </Border>
@@ -162,9 +203,12 @@
                 <Border Grid.Column="2" BorderBrush="#333333" BorderThickness="1" Padding="16,12" Background="#252526">
                     <StackPanel>
                         <TextBlock Text="FILTER STYLE" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Label" Style="{StaticResource FieldLabel}"/>
-                        <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Margin="0,0,0,8"
+                        <TextBlock Text="Multi-select" Style="{StaticResource FieldLabel}"/>
+                        <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Margin="0,0,0,8"
                             ItemsSource="{Binding SampleFilterItems}"/>
+                        <TextBlock Text="Single-select (MD)" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox Style="{StaticResource FilterComboBox}" Margin="0,0,0,8"
+                                  ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
                     </StackPanel>
                 </Border>
             </Grid>
