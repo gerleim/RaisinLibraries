@@ -203,12 +203,15 @@
                 <Border Grid.Column="2" BorderBrush="#333333" BorderThickness="1" Padding="16,12" Background="#252526">
                     <StackPanel>
                         <TextBlock Text="FILTER STYLE" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Multi-select" Style="{StaticResource FieldLabel}"/>
-                        <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Margin="0,0,0,8"
-                            ItemsSource="{Binding SampleFilterItems}"/>
                         <TextBlock Text="Single-select (MD)" Style="{StaticResource FieldLabel}"/>
                         <ComboBox Style="{StaticResource FilterComboBox}" Margin="0,0,0,8"
                                   ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
+                        <TextBlock Text="Multi-select" Style="{StaticResource FieldLabel}"/>
+                        <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Margin="0,0,0,8"
+                            ItemsSource="{Binding SampleFilterItems}"/>
+                        <TextBlock Text="Text field" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="Filter text" Style="{StaticResource FilterBox}" Margin="0,0,0,8"/>
+                        <Button Content="Action" Style="{StaticResource FilterButton}" HorizontalAlignment="Left"/>
                     </StackPanel>
                 </Border>
             </Grid>
