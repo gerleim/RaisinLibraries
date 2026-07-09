@@ -855,8 +855,10 @@
 
     <!-- Filter variant of FieldBox: rounded corners, smaller for filter bars -->
     <Style x:Key="FilterBox" TargetType="TextBox" BasedOn="{StaticResource FieldBox}">
+        <Setter Property="Height" Value="22"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Padding" Value="6,2"/>
+        <Setter Property="Padding" Value="3,0"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -918,6 +920,145 @@
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="Background" Value="#2D2D30"/>
                             <Setter Property="Foreground" Value="#666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Filter variant of FieldCombo: rounded corners, BlueGrey accents, smaller for filter bars -->
+    <Style x:Key="FilterCombo" TargetType="controls:FieldComboBox">
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Background" Value="#2D2D30"/>
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="BorderBrush" Value="#3F3F46"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="6,2"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ComboBoxItem">
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                    <Setter Property="Foreground" Value="#CCCCCC"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ComboBoxItem">
+                                <Border x:Name="Bd" Padding="6,4" SnapsToDevicePixels="True">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="#3E3E42" Opacity="0"/>
+                                    </Border.Background>
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsHighlighted" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bd"
+                                                        Storyboard.TargetProperty="Background.Opacity"
+                                                        To="1" Duration="0:0:0.12"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bd"
+                                                        Storyboard.TargetProperty="Background.Opacity"
+                                                        To="0" Duration="0:0:0.3"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:FieldComboBox">
+                    <Grid SnapsToDevicePixels="True">
+                        <ToggleButton Focusable="False" Style="{x:Null}"
+                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      ClickMode="Press">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Bd"
+                                            Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            Padding="{Binding Padding, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            TextElement.Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            CornerRadius="3" SnapsToDevicePixels="True">
+                                        <ContentPresenter IsHitTestVisible="False"
+                                                          Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                          ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                          ContentStringFormat="{Binding SelectionBoxItemStringFormat, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                          VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#78909C"/>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding IsDropDownOpen, RelativeSource={RelativeSource AncestorType=ComboBox}}" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#607D8B"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=ComboBox}}" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#607D8B"/>
+                                        </DataTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <Path Data="M0,0 L4,4 8,0" Stroke="#999999" StrokeThickness="1.5"
+                              HorizontalAlignment="Right" VerticalAlignment="Center"
+                              Margin="0,0,8,0" IsHitTestVisible="False"/>
+                        <Popup x:Name="PART_Popup"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               Placement="Bottom" AllowsTransparency="True"
+                               Focusable="False" PopupAnimation="None"
+                               MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Grid x:Name="DropdownBorder" MaxHeight="300" Margin="6,1,6,6"
+                                  Opacity="0">
+                                <Border BorderBrush="#111111" BorderThickness="1" CornerRadius="4">
+                                    <Border.Effect>
+                                        <BlurEffect Radius="6"/>
+                                    </Border.Effect>
+                                </Border>
+                                <Border Background="#2D2D30" BorderBrush="#3F3F46"
+                                        BorderThickness="1" CornerRadius="4" Margin="1">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DropdownBorder"
+                                            Storyboard.TargetProperty="Opacity"
+                                            From="0" To="1" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DropdownBorder"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

@@ -157,7 +157,7 @@
                 <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Width="200"
                     ItemsSource="{Binding SampleFilterItems}"/>
             </StackPanel>
-            <TextBlock Text="Rounded corners, #555555 border — for filter bars and toolbars:" Foreground="#666666" FontSize="10" Margin="0,4,0,4"/>
+            <TextBlock Text="Rounded corners, BlueGrey accents — for filter bars and toolbars:" Foreground="#666666" FontSize="10" Margin="0,4,0,4"/>
             <StackPanel Orientation="Horizontal">
                 <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Width="120" Margin="0,0,8,0"
                     ItemsSource="{Binding SampleFilterItems}"/>
@@ -167,12 +167,19 @@
                     ItemsSource="{Binding SampleFilterItems}"/>
             </StackPanel>
 
-            <!-- FilterComboBox -->
-            <TextBlock Text="FilterComboBox (MD-based, single-select)" Style="{StaticResource GroupHeader}"/>
+            <!-- FilterCombo (single-select, filter bar style) -->
+            <TextBlock Text="FilterCombo (FieldComboBox)" Style="{StaticResource GroupHeader}"/>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Text="Default" Style="{StaticResource StateLabel}"/>
-                <ComboBox Style="{StaticResource FilterComboBox}" Width="120"
+                <controls:FieldComboBox Style="{StaticResource FilterCombo}" Width="200"
                           ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
+            </StackPanel>
+            <TextBlock Text="Rounded corners, BlueGrey accents — matches FilterDropdown:" Foreground="#666666" FontSize="10" Margin="0,4,0,4"/>
+            <StackPanel Orientation="Horizontal">
+                <controls:FieldComboBox Style="{StaticResource FilterCombo}" Width="120" Margin="0,0,8,0"
+                          ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
+                <controls:FieldComboBox Style="{StaticResource FilterCombo}" Width="120"
+                          ItemsSource="{StaticResource SampleItems}" SelectedIndex="1"/>
             </StackPanel>
 
             <!-- Side by side -->
@@ -203,8 +210,8 @@
                 <Border Grid.Column="2" BorderBrush="#333333" BorderThickness="1" Padding="16,12" Background="#252526">
                     <StackPanel>
                         <TextBlock Text="FILTER STYLE" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Single-select (MD)" Style="{StaticResource FieldLabel}"/>
-                        <ComboBox Style="{StaticResource FilterComboBox}" Margin="0,0,0,8"
+                        <TextBlock Text="Single-select" Style="{StaticResource FieldLabel}"/>
+                        <controls:FieldComboBox Style="{StaticResource FilterCombo}" Margin="0,0,0,8"
                                   ItemsSource="{StaticResource SampleItems}" SelectedIndex="0"/>
                         <TextBlock Text="Multi-select" Style="{StaticResource FieldLabel}"/>
                         <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Margin="0,0,0,8"
