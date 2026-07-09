@@ -450,6 +450,7 @@
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
                 <Style TargetType="ComboBoxItem">
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                     <Setter Property="Foreground" Value="#CCCCCC"/>
                     <Setter Property="SnapsToDevicePixels" Value="True"/>
                     <Setter Property="Template">
