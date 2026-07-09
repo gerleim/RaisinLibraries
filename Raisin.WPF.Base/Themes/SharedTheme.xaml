@@ -146,7 +146,7 @@
     </Style>
 
     <!-- Multi-select filter dropdown: checkbox list with Shift+Click "select below" -->
-    <Style TargetType="{x:Type controls:MultiSelectFilterDropdown}">
+    <Style TargetType="{x:Type controls:MultiSelectDropdown}">
         <Setter Property="Height" Value="22"/>
         <Setter Property="MinHeight" Value="0"/>
         <Setter Property="FontSize" Value="12"/>
@@ -154,26 +154,26 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type controls:MultiSelectFilterDropdown}">
+                <ControlTemplate TargetType="{x:Type controls:MultiSelectDropdown}">
                     <Grid>
                         <ToggleButton x:Name="PART_ToggleButton" Focusable="False" Style="{x:Null}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
-                                    <Border x:Name="Bd" Background="{Binding ToggleBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
-                                            BorderBrush="{Binding ToggleBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                                    <Border x:Name="Bd" Background="{Binding ToggleBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                            BorderBrush="{Binding ToggleBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
                                             BorderThickness="1" CornerRadius="2" SnapsToDevicePixels="True"
                                             Padding="6,0,20,0">
-                                        <TextBlock Text="{Binding SummaryText, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
-                                                   VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding SummaryText, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                                   VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}" TextTrimming="CharacterEllipsis"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{Binding HoverBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{Binding HoverBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"/>
                                         </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{Binding AccentBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{Binding AccentBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -187,8 +187,8 @@
                                Placement="Bottom" AllowsTransparency="True" StaysOpen="True"
                                Focusable="False" PopupAnimation="None"
                                MinWidth="{Binding ActualWidth, ElementName=PART_ToggleButton}">
-                            <Border Background="{Binding PopupBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
-                                    BorderBrush="{Binding PopupBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                            <Border Background="{Binding PopupBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                    BorderBrush="{Binding PopupBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
                                     BorderThickness="1" MaxHeight="300" Margin="0,1,0,0">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <ItemsControl x:Name="PART_ItemsList"
@@ -196,19 +196,19 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border x:Name="ItemBorder" Background="Transparent"
-                                                        Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}">
+                                                        Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                                                   VerticalAlignment="Center" Margin="0,0,6,0"
                                                                   Focusable="False"/>
                                                         <ContentPresenter Content="{Binding}" Margin="0"
-                                                            ContentTemplate="{Binding ItemContentTemplate, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
+                                                            ContentTemplate="{Binding ItemContentTemplate, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"/>
                                                     </StackPanel>
                                                 </Border>
                                                 <DataTemplate.Triggers>
                                                     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True">
                                                         <Setter TargetName="ItemBorder" Property="Background"
-                                                                Value="{Binding ItemHoverBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
+                                                                Value="{Binding ItemHoverBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"/>
                                                     </DataTrigger>
                                                 </DataTemplate.Triggers>
                                             </DataTemplate>
@@ -224,7 +224,7 @@
     </Style>
 
     <!-- Subtle variant: darker background, underline hover, animated item hover (matches FilterComboBox) -->
-    <Style x:Key="FilterDropdown" TargetType="{x:Type controls:MultiSelectFilterDropdown}">
+    <Style x:Key="FieldDropdownSubtle" TargetType="{x:Type controls:MultiSelectDropdown}">
         <Setter Property="Height" Value="22"/>
         <Setter Property="MinHeight" Value="0"/>
         <Setter Property="FontSize" Value="12"/>
@@ -240,17 +240,17 @@
         <Setter Property="ItemPadding" Value="6,6,8,6"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type controls:MultiSelectFilterDropdown}">
+                <ControlTemplate TargetType="{x:Type controls:MultiSelectDropdown}">
                     <Grid>
                         <ToggleButton x:Name="PART_ToggleButton" Focusable="True" Style="{x:Null}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press" FocusVisualStyle="{x:Null}">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
-                                    <Border Background="{Binding ToggleBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                                    <Border Background="{Binding ToggleBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
                                             SnapsToDevicePixels="True" Padding="6,0,20,0">
-                                        <TextBlock Text="{Binding SummaryText, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
-                                                   VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding SummaryText, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                                   VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}" TextTrimming="CharacterEllipsis"/>
                                     </Border>
                                 </ControlTemplate>
                             </ToggleButton.Template>
@@ -281,7 +281,7 @@
                                         <BlurEffect Radius="6"/>
                                     </Border.Effect>
                                 </Border>
-                                <Border Background="{Binding PopupBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"
+                                <Border Background="{Binding PopupBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
                                         BorderThickness="0" CornerRadius="0,0,4,4"
                                         Margin="1">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -290,7 +290,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border x:Name="ItemBorder"
-                                                        Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}">
+                                                        Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}">
                                                     <Border.Background>
                                                         <SolidColorBrush Color="#3E3E42" Opacity="0"/>
                                                     </Border.Background>
@@ -299,7 +299,7 @@
                                                                   VerticalAlignment="Center" Margin="0,0,6,0"
                                                                   Focusable="False"/>
                                                         <ContentPresenter Content="{Binding}" Margin="0"
-                                                            ContentTemplate="{Binding ItemContentTemplate, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectFilterDropdown}}}"/>
+                                                            ContentTemplate="{Binding ItemContentTemplate, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"/>
                                                     </StackPanel>
                                                 </Border>
                                                 <DataTemplate.Triggers>
@@ -571,6 +571,149 @@
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Multi-select dropdown matching FieldCombo: rounded corners, shadow, animated hover -->
+    <Style x:Key="FieldDropdown" TargetType="{x:Type controls:MultiSelectDropdown}">
+        <Setter Property="Height" Value="26"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="ToggleBackground" Value="#2D2D30"/>
+        <Setter Property="ToggleBorderBrush" Value="#3F3F46"/>
+        <Setter Property="HoverBorderBrush" Value="#7EB4EA"/>
+        <Setter Property="AccentBrush" Value="#569DE5"/>
+        <Setter Property="PopupBackground" Value="#2D2D30"/>
+        <Setter Property="PopupBorderBrush" Value="#3F3F46"/>
+        <Setter Property="ItemHoverBackground" Value="Transparent"/>
+        <Setter Property="ChevronBrush" Value="#999999"/>
+        <Setter Property="ItemPadding" Value="6,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:MultiSelectDropdown}">
+                    <Grid SnapsToDevicePixels="True">
+                        <ToggleButton x:Name="PART_ToggleButton" Focusable="True" Style="{x:Null}"
+                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      ClickMode="Press" FocusVisualStyle="{x:Null}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Bd"
+                                            Background="{Binding ToggleBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                            BorderBrush="{Binding ToggleBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                            BorderThickness="1" CornerRadius="3" SnapsToDevicePixels="True"
+                                            Padding="6,0,20,0">
+                                        <TextBlock Text="{Binding SummaryText, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#7EB4EA"/>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#569DE5"/>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#569DE5"/>
+                                        </DataTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <Path Data="M0,0 L4,4 8,0" Stroke="{TemplateBinding ChevronBrush}" StrokeThickness="1.5"
+                              HorizontalAlignment="Right" VerticalAlignment="Center"
+                              Margin="0,0,8,0" IsHitTestVisible="False"/>
+                        <Popup x:Name="PART_Popup"
+                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                               Placement="Bottom" AllowsTransparency="True" StaysOpen="True"
+                               Focusable="False" PopupAnimation="None"
+                               MinWidth="{Binding ActualWidth, ElementName=PART_ToggleButton}">
+                            <Grid x:Name="DropdownBorder" MaxHeight="300" Margin="6,1,6,6"
+                                  Opacity="0">
+                                <Border BorderBrush="#111111" BorderThickness="1" CornerRadius="4">
+                                    <Border.Effect>
+                                        <BlurEffect Radius="6"/>
+                                    </Border.Effect>
+                                </Border>
+                                <Border Background="{Binding PopupBackground, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                        BorderBrush="{Binding PopupBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"
+                                        BorderThickness="1" CornerRadius="4" Margin="1">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl x:Name="PART_ItemsList"
+                                                      ItemsSource="{TemplateBinding ItemsSource}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border x:Name="ItemBorder"
+                                                            Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}">
+                                                        <Border.Background>
+                                                            <SolidColorBrush Color="#3E3E42" Opacity="0"/>
+                                                        </Border.Background>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                      VerticalAlignment="Center" Margin="0,0,6,0"
+                                                                      Focusable="False"/>
+                                                            <ContentPresenter Content="{Binding}" Margin="0"
+                                                                ContentTemplate="{Binding ItemContentTemplate, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True">
+                                                            <DataTrigger.EnterActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation Storyboard.TargetName="ItemBorder"
+                                                                            Storyboard.TargetProperty="Background.Opacity"
+                                                                            To="1" Duration="0:0:0.12"/>
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </DataTrigger.EnterActions>
+                                                            <DataTrigger.ExitActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation Storyboard.TargetName="ItemBorder"
+                                                                            Storyboard.TargetProperty="Background.Opacity"
+                                                                            To="0" Duration="0:0:0.3"/>
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </DataTrigger.ExitActions>
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsDropDownOpen, RelativeSource={RelativeSource Self}}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DropdownBorder"
+                                            Storyboard.TargetProperty="Opacity"
+                                            From="0" To="1" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DropdownBorder"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

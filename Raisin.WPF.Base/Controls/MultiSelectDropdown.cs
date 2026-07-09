@@ -7,63 +7,63 @@ using System.Windows.Media;
 
 namespace Raisin.WPF.Base.Controls;
 
-public class MultiSelectFilterDropdown : Control
+public class MultiSelectDropdown : Control
 {
-    static MultiSelectFilterDropdown()
+    static MultiSelectDropdown()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(MultiSelectFilterDropdown),
-            new FrameworkPropertyMetadata(typeof(MultiSelectFilterDropdown)));
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(MultiSelectDropdown),
+            new FrameworkPropertyMetadata(typeof(MultiSelectDropdown)));
     }
 
     public static readonly DependencyProperty ItemsSourceProperty =
-        DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(MultiSelectDropdown),
             new PropertyMetadata(null, OnItemsSourceChanged));
 
     public static readonly DependencyProperty ItemContentTemplateProperty =
-        DependencyProperty.Register(nameof(ItemContentTemplate), typeof(DataTemplate), typeof(MultiSelectFilterDropdown));
+        DependencyProperty.Register(nameof(ItemContentTemplate), typeof(DataTemplate), typeof(MultiSelectDropdown));
 
     public static readonly DependencyProperty IsDropDownOpenProperty =
-        DependencyProperty.Register(nameof(IsDropDownOpen), typeof(bool), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(IsDropDownOpen), typeof(bool), typeof(MultiSelectDropdown),
             new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsDropDownOpenChanged));
 
     public static readonly DependencyProperty SummaryTextProperty =
-        DependencyProperty.Register(nameof(SummaryText), typeof(string), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(SummaryText), typeof(string), typeof(MultiSelectDropdown),
             new PropertyMetadata("All"));
 
     public static readonly DependencyProperty ToggleBackgroundProperty =
-        DependencyProperty.Register(nameof(ToggleBackground), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(ToggleBackground), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x3C, 0x3C, 0x3C))));
 
     public static readonly DependencyProperty ToggleBorderBrushProperty =
-        DependencyProperty.Register(nameof(ToggleBorderBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(ToggleBorderBrush), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55))));
 
     public static readonly DependencyProperty HoverBorderBrushProperty =
-        DependencyProperty.Register(nameof(HoverBorderBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(HoverBorderBrush), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x77, 0x77, 0x77))));
 
     public static readonly DependencyProperty AccentBrushProperty =
-        DependencyProperty.Register(nameof(AccentBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(AccentBrush), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x00, 0x7A, 0xCC))));
 
     public static readonly DependencyProperty PopupBackgroundProperty =
-        DependencyProperty.Register(nameof(PopupBackground), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(PopupBackground), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x2D, 0x2D, 0x30))));
 
     public static readonly DependencyProperty PopupBorderBrushProperty =
-        DependencyProperty.Register(nameof(PopupBorderBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(PopupBorderBrush), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55))));
 
     public static readonly DependencyProperty ItemHoverBackgroundProperty =
-        DependencyProperty.Register(nameof(ItemHoverBackground), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(ItemHoverBackground), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x3E, 0x3E, 0x42))));
 
     public static readonly DependencyProperty ChevronBrushProperty =
-        DependencyProperty.Register(nameof(ChevronBrush), typeof(Brush), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(ChevronBrush), typeof(Brush), typeof(MultiSelectDropdown),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99))));
 
     public static readonly DependencyProperty ItemPaddingProperty =
-        DependencyProperty.Register(nameof(ItemPadding), typeof(Thickness), typeof(MultiSelectFilterDropdown),
+        DependencyProperty.Register(nameof(ItemPadding), typeof(Thickness), typeof(MultiSelectDropdown),
             new PropertyMetadata(new Thickness(6, 3, 6, 3)));
 
     public IEnumerable? ItemsSource
@@ -148,7 +148,7 @@ public class MultiSelectFilterDropdown : Control
 
     private static void OnIsDropDownOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var self = (MultiSelectFilterDropdown)d;
+        var self = (MultiSelectDropdown)d;
         if ((bool)e.NewValue)
             Mouse.Capture(self, CaptureMode.SubTree);
         else
@@ -183,17 +183,17 @@ public class MultiSelectFilterDropdown : Control
 
     private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var self = (MultiSelectFilterDropdown)d;
+        var self = (MultiSelectDropdown)d;
         if (e.OldValue is IEnumerable oldItems)
         {
             foreach (var obj in oldItems)
-                if (obj is SelectableFilterItem item)
+                if (obj is SelectableItem item)
                     item.PropertyChanged -= self.OnItemPropertyChanged;
         }
         if (e.NewValue is IEnumerable newItems)
         {
             foreach (var obj in newItems)
-                if (obj is SelectableFilterItem item)
+                if (obj is SelectableItem item)
                     item.PropertyChanged += self.OnItemPropertyChanged;
         }
         self.UpdateSummary();
@@ -201,7 +201,7 @@ public class MultiSelectFilterDropdown : Control
 
     private void OnItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(SelectableFilterItem.IsSelected))
+        if (e.PropertyName == nameof(SelectableItem.IsSelected))
             UpdateSummary();
     }
 
@@ -222,12 +222,12 @@ public class MultiSelectFilterDropdown : Control
     {
         var source = e.OriginalSource as DependencyObject;
 
-        // Find which SelectableFilterItem was clicked
-        SelectableFilterItem? item = null;
+        // Find which SelectableItem was clicked
+        SelectableItem? item = null;
         var walk = source;
         while (walk != null && walk != _itemsList)
         {
-            if (walk is FrameworkElement fe && fe.DataContext is SelectableFilterItem sfi)
+            if (walk is FrameworkElement fe && fe.DataContext is SelectableItem sfi)
             {
                 item = sfi;
                 break;
@@ -254,7 +254,7 @@ public class MultiSelectFilterDropdown : Control
         e.Handled = true;
     }
 
-    private void HandleItemClick(SelectableFilterItem item, bool shiftHeld)
+    private void HandleItemClick(SelectableItem item, bool shiftHeld)
     {
         if (shiftHeld)
             SelectThisAndAbove(item);
@@ -265,13 +265,13 @@ public class MultiSelectFilterDropdown : Control
         SelectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void SelectThisAndAbove(SelectableFilterItem target)
+    private void SelectThisAndAbove(SelectableItem target)
     {
         if (ItemsSource == null) return;
 
-        var items = new List<SelectableFilterItem>();
+        var items = new List<SelectableItem>();
         foreach (var obj in ItemsSource)
-            if (obj is SelectableFilterItem item)
+            if (obj is SelectableItem item)
                 items.Add(item);
 
         // Check if target and all items above it are already selected
@@ -308,10 +308,10 @@ public class MultiSelectFilterDropdown : Control
     {
         if (ItemsSource == null) { SummaryText = "All"; return; }
 
-        var selected = new List<SelectableFilterItem>();
+        var selected = new List<SelectableItem>();
         foreach (var obj in ItemsSource)
         {
-            if (obj is SelectableFilterItem { IsSelected: true } item)
+            if (obj is SelectableItem { IsSelected: true } item)
                 selected.Add(item);
         }
 
@@ -328,7 +328,7 @@ public class MultiSelectFilterDropdown : Control
         if (ItemsSource == null) return;
         foreach (var obj in ItemsSource)
         {
-            if (obj is SelectableFilterItem item)
+            if (obj is SelectableItem item)
                 item.IsSelected = false;
         }
         UpdateSummary();
@@ -340,7 +340,7 @@ public class MultiSelectFilterDropdown : Control
         if (ItemsSource == null) return false;
         foreach (var obj in ItemsSource)
         {
-            if (obj is SelectableFilterItem { IsSelected: true })
+            if (obj is SelectableItem { IsSelected: true })
                 return true;
         }
         return false;

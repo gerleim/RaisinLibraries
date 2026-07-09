@@ -161,11 +161,10 @@
 
                 <Border Grid.Column="2" BorderBrush="#333333" BorderThickness="1" Padding="16,12" Background="#252526">
                     <StackPanel>
-                        <TextBlock Text="FILTER STYLE (TBD)" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Placeholder for filter variants" Foreground="#666666" FontSize="11"/>
-                        <TextBlock Text="BasedOn form styles with:" Foreground="#666666" FontSize="11" Margin="0,4,0,0"/>
-                        <TextBlock Text="  - Rounded corners" Foreground="#666666" FontSize="11"/>
-                        <TextBlock Text="  - Different border colors" Foreground="#666666" FontSize="11"/>
+                        <TextBlock Text="FILTER STYLE" Foreground="#569DE5" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="Label" Style="{StaticResource FieldLabel}"/>
+                        <controls:MultiSelectDropdown Style="{StaticResource FieldDropdown}" Margin="0,0,0,8"
+                            ItemsSource="{Binding SampleFilterItems}"/>
                     </StackPanel>
                 </Border>
             </Grid>

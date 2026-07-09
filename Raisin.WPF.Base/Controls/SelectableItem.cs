@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Raisin.WPF.Base.Controls;
 
-public class SelectableFilterItem : INotifyPropertyChanged
+public class SelectableItem : INotifyPropertyChanged
 {
     private bool _isSelected;
 
@@ -27,7 +27,7 @@ public class SelectableFilterItem : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action? SelectionChanged;
 
-    public SelectableFilterItem(string label, object? value)
+    public SelectableItem(string label, object? value)
     {
         Label = label;
         Value = value;
@@ -35,12 +35,12 @@ public class SelectableFilterItem : INotifyPropertyChanged
 
     public override string ToString() => Label;
 
-    public static List<SelectableFilterItem> FromEnum<T>(Action? onChanged = null) where T : struct, Enum
+    public static List<SelectableItem> FromEnum<T>(Action? onChanged = null) where T : struct, Enum
     {
-        var items = new List<SelectableFilterItem>();
+        var items = new List<SelectableItem>();
         foreach (var val in Enum.GetValues<T>())
         {
-            var item = new SelectableFilterItem(val.ToString(), val);
+            var item = new SelectableItem(val.ToString(), val);
             if (onChanged != null)
                 item.SelectionChanged += onChanged;
             items.Add(item);
