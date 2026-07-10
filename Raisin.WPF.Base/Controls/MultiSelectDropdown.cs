@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Raisin.WPF.Base.Controls;
 
@@ -13,6 +14,41 @@ public class MultiSelectDropdown : Control
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(MultiSelectDropdown),
             new FrameworkPropertyMetadata(typeof(MultiSelectDropdown)));
+    }
+
+    public MultiSelectDropdown()
+    {
+        AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent,
+            new MouseButtonEventHandler(OnClickOutside), true);
+    }
+
+    private void OnClickOutside(object sender, MouseButtonEventArgs e)
+    {
+        if (!IsDropDownOpen) return;
+
+        var window = Window.GetWindow(this);
+        if (window == null) return;
+
+        var pos = e.GetPosition(window);
+
+        IsDropDownOpen = false;
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            var hit = VisualTreeHelper.HitTest(window, pos);
+            if (hit?.VisualHit is not UIElement target) return;
+            if (IsAncestorOf(target)) return;
+
+            var timestamp = Environment.TickCount;
+
+            target.RaiseEvent(new MouseButtonEventArgs(
+                Mouse.PrimaryDevice, timestamp, MouseButton.Left)
+            { RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent });
+
+            target.RaiseEvent(new MouseButtonEventArgs(
+                Mouse.PrimaryDevice, timestamp, MouseButton.Left)
+            { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
+        });
     }
 
     public static readonly DependencyProperty ItemsSourceProperty =
@@ -176,9 +212,8 @@ public class MultiSelectDropdown : Control
             togglePos.X <= ActualWidth && togglePos.Y <= ActualHeight)
             return;
 
-        // Click is outside — close
+        // Click is outside — close (OnClickOutside re-dispatches to the target)
         IsDropDownOpen = false;
-        e.Handled = true;
     }
 
     private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
