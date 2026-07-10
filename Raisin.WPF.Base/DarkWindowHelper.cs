@@ -28,11 +28,13 @@ public static class DarkWindowHelper
         // during resize and before WPF renders.
         source?.AddHook(WndProc);
 
-        // DWM dark mode + caption color
+        // DWM dark mode + caption color + square corners
         uint darkMode = 1;
         NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref darkMode, sizeof(uint));
         uint captionColor = 0x00302D2D;
         NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_CAPTION_COLOR, ref captionColor, sizeof(uint));
+        uint cornerPreference = 1; // DWMWCP_DONOTROUND
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_WINDOW_CORNER_PREFERENCE, ref cornerPreference, sizeof(uint));
     }
 
     private const int WM_ERASEBKGND = 0x0014;
