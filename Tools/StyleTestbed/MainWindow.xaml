@@ -182,13 +182,6 @@
                           ItemsSource="{StaticResource SampleItems}" SelectedIndex="1"/>
             </StackPanel>
 
-            <!-- FilterSearchBox -->
-            <TextBlock Text="FilterSearchBox" Style="{StaticResource GroupHeader}"/>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                <TextBlock Text="Default" Style="{StaticResource StateLabel}"/>
-                <TextBox Style="{StaticResource FilterSearchBox}" Tag="Search..." Width="200"/>
-            </StackPanel>
-
             <!-- Side by side -->
             <TextBlock Text="Side-by-Side: Form vs Filter" Style="{StaticResource GroupHeader}"/>
             <TextBlock Text="Form controls (sharp corners, #3F3F46 border) vs filter variants (rounded, BlueGrey accents)" Foreground="#666666" FontSize="10" Margin="0,0,0,8"/>
@@ -223,8 +216,6 @@
                         <TextBlock Text="Multi-select" Style="{StaticResource FieldLabel}"/>
                         <controls:MultiSelectDropdown Style="{StaticResource FilterDropdown}" Margin="0,0,0,8"
                             ItemsSource="{Binding SampleFilterItems}"/>
-                        <TextBlock Text="Text field" Style="{StaticResource FieldLabel}"/>
-                        <TextBox Text="Filter text" Style="{StaticResource FilterBox}" Margin="0,0,0,8"/>
                         <TextBlock Text="Search" Style="{StaticResource FieldLabel}"/>
                         <TextBox Style="{StaticResource FilterSearchBox}" Tag="Search..." Margin="0,0,0,8"/>
                         <Button Content="Action" Style="{StaticResource FilterButton}" HorizontalAlignment="Left"/>
