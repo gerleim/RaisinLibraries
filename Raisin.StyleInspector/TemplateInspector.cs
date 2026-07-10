@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Raisin.StyleInspector;
 
@@ -49,6 +51,9 @@ internal static class TemplateInspector
                 if (info != null) result.Add(info);
             }
         }
+
+        // Visual state groups
+        result.AddRange(ResolveVisualStateGroups(element));
 
         return result;
     }
@@ -166,6 +171,84 @@ internal static class TemplateInspector
             return true;
         }
         catch { return null; }
+    }
+
+    private static List<TemplateTriggerInfo> ResolveVisualStateGroups(FrameworkElement element)
+    {
+        var results = new List<TemplateTriggerInfo>();
+
+        FrameworkElement? templateRoot;
+        try { templateRoot = VisualTreeHelper.GetChild(element, 0) as FrameworkElement; }
+        catch { return results; }
+        if (templateRoot == null) return results;
+
+        var groups = VisualStateManager.GetVisualStateGroups(templateRoot);
+        if (groups == null || groups.Count == 0) return results;
+
+        foreach (VisualStateGroup group in groups)
+        {
+            foreach (VisualState state in group.States)
+            {
+                if (string.IsNullOrEmpty(state.Name)) continue;
+
+                var setters = ExtractStoryboardActions(state.Storyboard);
+                var capturedGroup = group;
+                var capturedState = state;
+
+                results.Add(new TemplateTriggerInfo
+                {
+                    Source = $"VSM:{group.Name}",
+                    Condition = state.Name,
+                    Setters = setters.Count > 0 ? setters : ["(empty state)"],
+                    PropertyNames = [],
+                    IsActive = ReferenceEquals(group.CurrentState, state),
+                    Evaluator = () => ReferenceEquals(capturedGroup.CurrentState, capturedState),
+                });
+            }
+        }
+
+        return results;
+    }
+
+    private static List<string> ExtractStoryboardActions(Storyboard? sb)
+    {
+        if (sb == null) return [];
+        var result = new List<string>();
+
+        foreach (var timeline in sb.Children)
+        {
+            var targetName = Storyboard.GetTargetName(timeline);
+            var targetProp = Storyboard.GetTargetProperty(timeline);
+            var prefix = string.IsNullOrEmpty(targetName) ? "" : $"{targetName}.";
+            var propPath = targetProp?.Path ?? "?";
+
+            switch (timeline)
+            {
+                case ObjectAnimationUsingKeyFrames oakf when oakf.KeyFrames.Count > 0:
+                    result.Add($"{prefix}{propPath} = {FormatValue(oakf.KeyFrames[0].Value)}");
+                    break;
+                case DoubleAnimation da:
+                    result.Add($"{prefix}{propPath} → {da.To?.ToString("G") ?? "?"}");
+                    break;
+                case DoubleAnimationUsingKeyFrames dakf when dakf.KeyFrames.Count > 0:
+                    result.Add($"{prefix}{propPath} → {dakf.KeyFrames[dakf.KeyFrames.Count - 1].Value:G}");
+                    break;
+                case ColorAnimation ca:
+                    result.Add($"{prefix}{propPath} → {ca.To}");
+                    break;
+                case ColorAnimationUsingKeyFrames cakf when cakf.KeyFrames.Count > 0:
+                    result.Add($"{prefix}{propPath} → {cakf.KeyFrames[cakf.KeyFrames.Count - 1].Value}");
+                    break;
+                case ThicknessAnimation ta:
+                    result.Add($"{prefix}{propPath} → {FormatValue(ta.To)}");
+                    break;
+                default:
+                    result.Add($"{prefix}{propPath} (animation)");
+                    break;
+            }
+        }
+
+        return result;
     }
 
     private static string? FindTemplateSource(FrameworkElement element, ControlTemplate template)
