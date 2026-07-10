@@ -884,6 +884,51 @@
         </Setter>
     </Style>
 
+    <!-- FilterBox with built-in search icon and placeholder -->
+    <Style x:Key="FilterSearchBox" TargetType="TextBox" BasedOn="{StaticResource FilterBox}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="&#xE721;"
+                                       FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                       Foreground="#888888" VerticalAlignment="Center"
+                                       Margin="5,0,2,0"/>
+                            <ScrollViewer Grid.Column="1" x:Name="PART_ContentHost" Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" x:Name="Placeholder"
+                                       Text="{TemplateBinding Tag}"
+                                       FontSize="12" Foreground="#666666"
+                                       IsHitTestVisible="False" VerticalAlignment="Center"
+                                       Margin="5,0,0,0" Visibility="Collapsed"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#78909C"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#607D8B"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Filter variant of SmallButton: rounded corners, smaller for filter bars -->
     <Style x:Key="FilterButton" TargetType="Button">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
