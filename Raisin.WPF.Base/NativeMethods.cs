@@ -22,10 +22,43 @@ internal static class NativeMethods
     [DllImport("gdi32.dll")]
     public static extern nint CreateSolidBrush(uint crColor);
 
+    [DllImport("user32.dll")]
+    public static extern nint GetDC(nint hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern int ReleaseDC(nint hWnd, nint hDC);
+
+    [DllImport("gdi32.dll")]
+    public static extern nint CreateCompatibleDC(nint hdc);
+
+    [DllImport("gdi32.dll")]
+    public static extern nint CreateCompatibleBitmap(nint hdc, int cx, int cy);
+
+    [DllImport("gdi32.dll")]
+    public static extern nint SelectObject(nint hdc, nint h);
+
+    [DllImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool BitBlt(nint hdc, int x, int y, int cx, int cy, nint hdcSrc, int x1, int y1, uint rop);
+
+    [DllImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool DeleteDC(nint hdc);
+
+    public const uint SRCCOPY = 0x00CC0020;
+
     public const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
     public const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
     public const int DWMWA_CAPTION_COLOR = 35;
     public const int GCLP_HBRBACKGROUND = -10;
+    public const int GWL_STYLE = -16;
+    public const int WS_CLIPCHILDREN = 0x02000000;
+
+    [DllImport("user32.dll")]
+    public static extern int GetWindowLong(nint hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    public static extern int SetWindowLong(nint hWnd, int nIndex, int dwNewLong);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct RECT
@@ -64,6 +97,11 @@ internal static class NativeMethods
         public uint DataLength;
         public byte Data;
     }
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmFlush();
+
+    public const int DWMWA_BORDER_COLOR = 34;
 
     [DllImport("user32.dll")]
     public static extern nint GetForegroundWindow();

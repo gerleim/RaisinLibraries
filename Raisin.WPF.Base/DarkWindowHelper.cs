@@ -1,34 +1,50 @@
+using System.Collections.Concurrent;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Shell;
 
 namespace Raisin.WPF.Base;
 
-/// <summary>
-/// Applies dark title bar, dark background brush, and WM_ERASEBKGND hook
-/// to prevent white flash. Call from OnSourceInitialized.
-/// </summary>
 public static class DarkWindowHelper
 {
+    private const int WM_ERASEBKGND = 0x0014;
+    private const uint FillColor = 0x00302D2D; // BGR for #2D2D30
+
+    private sealed class WindowInfo
+    {
+        public int CaptionPx;
+    }
+
+    private static readonly ConcurrentDictionary<IntPtr, WindowInfo> _windows = new();
+
     public static void Apply(Window window)
     {
         var hwnd = new WindowInteropHelper(window).Handle;
+        var chrome = WindowChrome.GetWindowChrome(window);
 
-        // Override the Win32 window-class background brush so the OS paints
-        // the client area dark before WPF renders its first frame.
-        var brush = NativeMethods.CreateSolidBrush(0x00212121);
+        if (chrome != null || window.WindowStyle == WindowStyle.None)
+        {
+            ApplyFloating(window);
+            return;
+        }
+
+        var source = PresentationSource.FromVisual(window);
+        double dpiScale = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+
+        var info = new WindowInfo();
+        info.CaptionPx = (int)(32 * dpiScale);
+        _windows[hwnd] = info;
+
+        var brush = NativeMethods.CreateSolidBrush(FillColor);
         NativeMethods.SetClassLongPtr(hwnd, NativeMethods.GCLP_HBRBACKGROUND, brush);
 
-        // Tell WPF's DirectX composition layer to clear to dark instead of white.
-        var source = HwndSource.FromHwnd(hwnd);
-        if (source?.CompositionTarget != null)
-            source.CompositionTarget.BackgroundColor = Color.FromRgb(0x21, 0x21, 0x21);
+        var hwndSource = HwndSource.FromHwnd(hwnd);
+        if (hwndSource?.CompositionTarget != null)
+            hwndSource.CompositionTarget.BackgroundColor = Color.FromRgb(0x2D, 0x2D, 0x30);
 
-        // Intercept WM_ERASEBKGND so the OS paints dark instead of white
-        // during resize and before WPF renders.
-        source?.AddHook(WndProc);
+        hwndSource?.AddHook(WndProc);
 
-        // DWM dark mode + caption color + square corners
         uint darkMode = 1;
         NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref darkMode, sizeof(uint));
         uint captionColor = 0x00302D2D;
@@ -37,21 +53,61 @@ public static class DarkWindowHelper
         NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_WINDOW_CORNER_PREFERENCE, ref cornerPreference, sizeof(uint));
     }
 
-    private const int WM_ERASEBKGND = 0x0014;
+    public static void ApplyFloating(Window window)
+    {
+        var hwnd = new WindowInteropHelper(window).Handle;
+        if (hwnd == IntPtr.Zero) return;
+
+        uint darkMode = 1;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref darkMode, sizeof(uint));
+        uint captionColor = FillColor;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_CAPTION_COLOR, ref captionColor, sizeof(uint));
+        uint borderColor = FillColor;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_BORDER_COLOR, ref borderColor, sizeof(uint));
+
+        var hwndSource = HwndSource.FromHwnd(hwnd);
+        hwndSource?.AddHook(FloatingWndProc);
+    }
+
+    private const int WM_ENTERSIZEMOVE = 0x0231;
+    private const int WM_EXITSIZEMOVE = 0x0232;
+    private const int WM_SIZE = 0x0005;
+
+    [ThreadStatic] private static bool _inSizeMove;
+
+    private static IntPtr FloatingWndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        switch (msg)
+        {
+            case WM_ENTERSIZEMOVE:
+                _inSizeMove = true;
+                break;
+            case WM_EXITSIZEMOVE:
+                _inSizeMove = false;
+                break;
+            case WM_SIZE when _inSizeMove:
+                NativeMethods.DwmFlush();
+                break;
+        }
+        return IntPtr.Zero;
+    }
 
     private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (msg == WM_ERASEBKGND)
-        {
-            var hdc = wParam;
-            var rect = new NativeMethods.RECT();
-            NativeMethods.GetClientRect(hwnd, ref rect);
-            var brush = NativeMethods.CreateSolidBrush(0x00212121);
-            NativeMethods.FillRect(hdc, ref rect, brush);
-            NativeMethods.DeleteObject(brush);
-            handled = true;
-            return (IntPtr)1;
-        }
-        return IntPtr.Zero;
+        if (msg != WM_ERASEBKGND)
+            return IntPtr.Zero;
+        if (!_windows.TryGetValue(hwnd, out var info))
+            return IntPtr.Zero;
+
+        var hdc = wParam;
+        var rect = new NativeMethods.RECT();
+        NativeMethods.GetClientRect(hwnd, ref rect);
+        if (info.CaptionPx > 0)
+            rect.Top = info.CaptionPx;
+        var brush = NativeMethods.CreateSolidBrush(FillColor);
+        NativeMethods.FillRect(hdc, ref rect, brush);
+        NativeMethods.DeleteObject(brush);
+        handled = true;
+        return (IntPtr)1;
     }
 }
