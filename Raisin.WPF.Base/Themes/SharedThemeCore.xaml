@@ -633,7 +633,7 @@
                                                   ItemsSource="{TemplateBinding ItemsSource}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border x:Name="ItemBorder" Background="Transparent"
+                                                <Border x:Name="ItemBorder" Background="Transparent" Cursor="Hand"
                                                         Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
@@ -886,7 +886,7 @@
                                                       ItemsSource="{TemplateBinding ItemsSource}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border x:Name="ItemBorder"
+                                                    <Border x:Name="ItemBorder" Cursor="Hand"
                                                             Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}">
                                                         <Border.Background>
                                                             <SolidColorBrush Color="#3E3E42" Opacity="0"/>
@@ -1019,7 +1019,7 @@
                                                       ItemsSource="{TemplateBinding ItemsSource}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border x:Name="ItemBorder"
+                                                    <Border x:Name="ItemBorder" Cursor="Hand"
                                                             Padding="{Binding ItemPadding, RelativeSource={RelativeSource AncestorType={x:Type controls:MultiSelectDropdown}}}">
                                                         <Border.Background>
                                                             <SolidColorBrush Color="#3E3E42" Opacity="0"/>
