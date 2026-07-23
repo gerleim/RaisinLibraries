@@ -256,9 +256,9 @@
                             <BeginStoryboard>
                                 <Storyboard>
                                     <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Background.Color"
-                                                    To="#424245" Duration="0:0:0.2" />
+                                                    To="#757575" Duration="0:0:0.2" />
                                     <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="BorderBrush.Color"
-                                                    To="#424245" Duration="0:0:0.2" />
+                                                    To="#757575" Duration="0:0:0.2" />
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
