@@ -265,31 +265,30 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
-                    <Grid x:Name="Bg" Opacity="0.5" SnapsToDevicePixels="True">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal"/>
-                                <VisualState x:Name="MouseOver">
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
-                                                         To="0.8" Duration="0:0:0.2"/>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
-                                                         To="0.35" Duration="0:0:0.2"/>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" MaxHeight="16"/>
-                            <RowDefinition Height="0.00001*"/>
-                            <RowDefinition Height="Auto" MaxHeight="16"/>
-                        </Grid.RowDefinitions>
-                        <Border Grid.Row="1" Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+                    <Border Background="Transparent" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid x:Name="Bg" Opacity="0.5" SnapsToDevicePixels="True">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
+                                                             To="0.8" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
+                                                             To="0.35" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" MaxHeight="16"/>
+                                <RowDefinition Height="0.00001*"/>
+                                <RowDefinition Height="Auto" MaxHeight="16"/>
+                            </Grid.RowDefinitions>
                         <RepeatButton x:Name="PART_LineUpButton" Grid.Row="0" Command="ScrollBar.LineUpCommand"
                                       IsEnabled="{TemplateBinding IsMouseOver}"
                                       Style="{StaticResource DarkScrollBarRepeatButton}">
@@ -319,7 +318,8 @@
                                 </Canvas>
                             </Viewbox>
                         </RepeatButton>
-                    </Grid>
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -333,31 +333,30 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ScrollBar">
-                            <Grid x:Name="Bg" Opacity="0.5" SnapsToDevicePixels="True">
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal"/>
-                                        <VisualState x:Name="MouseOver">
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
-                                                                 To="0.8" Duration="0:0:0.2"/>
-                                            </Storyboard>
-                                        </VisualState>
-                                        <VisualState x:Name="Disabled">
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
-                                                                 To="0.35" Duration="0:0:0.2"/>
-                                            </Storyboard>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" MaxWidth="16"/>
-                                    <ColumnDefinition Width="0.00001*"/>
-                                    <ColumnDefinition Width="Auto" MaxWidth="16"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="1" Background="{TemplateBinding Background}"
-                                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+                            <Border Background="Transparent" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                <Grid x:Name="Bg" Opacity="0.5" SnapsToDevicePixels="True">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
+                                                                     To="0.8" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Bg" Storyboard.TargetProperty="Opacity"
+                                                                     To="0.35" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MaxWidth="16"/>
+                                        <ColumnDefinition Width="0.00001*"/>
+                                        <ColumnDefinition Width="Auto" MaxWidth="16"/>
+                                    </Grid.ColumnDefinitions>
                                 <RepeatButton x:Name="PART_LineLeftButton" Grid.Column="0" Command="ScrollBar.LineLeftCommand"
                                               IsEnabled="{TemplateBinding IsMouseOver}"
                                               Style="{StaticResource DarkScrollBarRepeatButton}">
@@ -387,7 +386,8 @@
                                         </Canvas>
                                     </Viewbox>
                                 </RepeatButton>
-                            </Grid>
+                                </Grid>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
