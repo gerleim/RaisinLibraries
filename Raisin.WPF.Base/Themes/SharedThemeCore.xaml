@@ -242,14 +242,26 @@
                                           Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#5F5F63"/>
-                            <Setter Property="BorderBrush" Value="#5F5F63"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#5F5F63"/>
-                            <Setter Property="BorderBrush" Value="#5F5F63"/>
-                        </Trigger>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Background.Color"
+                                                    To="#5F5F63" Duration="0:0:0.2" />
+                                    <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="BorderBrush.Color"
+                                                    To="#5F5F63" Duration="0:0:0.2" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Background.Color"
+                                                    To="#424245" Duration="0:0:0.2" />
+                                    <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="BorderBrush.Color"
+                                                    To="#424245" Duration="0:0:0.2" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="contentPresenter" Property="Opacity" Value="0.56"/>
                         </Trigger>
@@ -298,7 +310,7 @@
                                       Style="{StaticResource DarkScrollBarRepeatButton}">
                             <Viewbox Width="12" Height="12" Margin="2,3,2,1">
                                 <Canvas Width="24" Height="24">
-                                    <Path Data="{StaticResource UpArrowGeometry}" Fill="{StaticResource TextMuted}" Stretch="Uniform"/>
+                                    <Path Data="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" Fill="#898989" Stretch="Uniform"/>
                                 </Canvas>
                             </Viewbox>
                         </RepeatButton>
