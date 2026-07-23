@@ -223,8 +223,8 @@
         </Setter>
     </Style>
     <Style x:Key="DarkScrollBarRepeatButton" TargetType="RepeatButton">
-        <Setter Property="Background" Value="{StaticResource SurfaceLight}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+        <Setter Property="Background" Value="#424245"/>
+        <Setter Property="BorderBrush" Value="#424245"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Focusable" Value="False"/>
@@ -243,12 +243,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{StaticResource SurfaceButtonHover}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource SurfaceButtonHover}"/>
+                            <Setter Property="Background" Value="#5F5F63"/>
+                            <Setter Property="BorderBrush" Value="#5F5F63"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource SurfaceButtonPressed}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource SurfaceButtonPressed}"/>
+                            <Setter Property="Background" Value="#5F5F63"/>
+                            <Setter Property="BorderBrush" Value="#5F5F63"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="contentPresenter" Property="Opacity" Value="0.56"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -258,8 +261,9 @@
     </Style>
     <Style TargetType="ScrollBar">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="1,0"/>
+        <Setter Property="Foreground" Value="{StaticResource BorderMedium}"/>
         <Setter Property="Width" Value="16"/>
         <Setter Property="MinWidth" Value="16"/>
         <Setter Property="Template">
