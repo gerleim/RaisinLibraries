@@ -213,7 +213,7 @@
                         <Border x:Name="border"
                                 Width="{TemplateBinding Width}"
                                 Height="{TemplateBinding Height}"
-                                Background="#757575"
+                                Background="#FFFFFF"
                                 BorderThickness="0"
                                 CornerRadius="0"
                                 Opacity="0.5"
