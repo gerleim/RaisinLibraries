@@ -209,13 +209,19 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="Bd" Background="{StaticResource BorderMedium}" BorderThickness="0" SnapsToDevicePixels="True"/>
+                    <Border Background="Transparent">
+                        <Border x:Name="border"
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                Background="#757575"
+                                BorderThickness="0"
+                                CornerRadius="0"
+                                Opacity="0.5"
+                                SnapsToDevicePixels="True" />
+                    </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource TextMuted}"/>
-                        </Trigger>
-                        <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource TextDim}"/>
+                        <Trigger Property="IsDragging" Value="true">
+                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
