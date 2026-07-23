@@ -11,6 +11,12 @@
         <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="BlueGrey" SecondaryColor="Teal" />
     </ResourceDictionary.MergedDictionaries>
 
+    <!-- Scrollbar arrow geometries (from MaterialDesign) -->
+    <Geometry x:Key="UpArrowGeometry">M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z</Geometry>
+    <Geometry x:Key="DownArrowGeometry">M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z</Geometry>
+    <Geometry x:Key="LeftArrowGeometry">M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z</Geometry>
+    <Geometry x:Key="RightArrowGeometry">M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z</Geometry>
+
     <!-- ═══ Dark theme color palette ═══ -->
 
     <!-- Surfaces (backgrounds) -->
@@ -198,13 +204,12 @@
     <!-- Dark scrollbar — without MD Defaults, WPF falls back to light Windows-style scrollbars.
          Full MD version is in MaterialDesignThemes.Wpf/Themes/MaterialDesignTheme.ScrollBar.xaml -->
     <Style x:Key="DarkScrollBarThumb" TargetType="Thumb">
-        <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="Bd" Background="{StaticResource BorderMedium}" CornerRadius="4"
-                            Margin="1" SnapsToDevicePixels="True"/>
+                    <Border x:Name="Bd" Background="{StaticResource BorderMedium}" BorderThickness="0" SnapsToDevicePixels="True"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource TextMuted}"/>
@@ -218,40 +223,80 @@
         </Setter>
     </Style>
     <Style x:Key="DarkScrollBarRepeatButton" TargetType="RepeatButton">
-        <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceLight}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Focusable" Value="False"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Padding" Value="1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">
-                    <Rectangle Fill="Transparent"/>
+                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="contentPresenter" Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Focusable="False" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{StaticResource SurfaceButtonHover}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource SurfaceButtonHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource SurfaceButtonPressed}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource SurfaceButtonPressed}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
     <Style TargetType="ScrollBar">
         <Setter Property="Background" Value="{StaticResource Surface}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Width" Value="10"/>
-        <Setter Property="MinWidth" Value="10"/>
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="MinWidth" Value="16"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
-                    <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                        <Track x:Name="PART_Track" IsDirectionReversed="True" IsEnabled="{TemplateBinding IsMouseOver}">
+                    <Grid SnapsToDevicePixels="True">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" MaxHeight="16"/>
+                            <RowDefinition Height="0.00001*"/>
+                            <RowDefinition Height="Auto" MaxHeight="16"/>
+                        </Grid.RowDefinitions>
+                        <RepeatButton x:Name="PART_LineUpButton" Grid.Row="0" Command="ScrollBar.LineUpCommand"
+                                      Style="{StaticResource DarkScrollBarRepeatButton}">
+                            <Viewbox Width="12" Height="12" Margin="2,3,2,1">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource UpArrowGeometry}" Fill="{StaticResource TextMuted}" Stretch="Uniform"/>
+                                </Canvas>
+                            </Viewbox>
+                        </RepeatButton>
+                        <Track x:Name="PART_Track" Grid.Row="1" IsDirectionReversed="True" IsEnabled="True">
                             <Track.DecreaseRepeatButton>
-                                <RepeatButton Style="{StaticResource DarkScrollBarRepeatButton}"
-                                              Command="ScrollBar.PageUpCommand"/>
+                                <RepeatButton Command="ScrollBar.PageUpCommand" Background="Transparent" BorderThickness="0" Focusable="False"/>
                             </Track.DecreaseRepeatButton>
                             <Track.Thumb>
                                 <Thumb Style="{StaticResource DarkScrollBarThumb}"/>
                             </Track.Thumb>
                             <Track.IncreaseRepeatButton>
-                                <RepeatButton Style="{StaticResource DarkScrollBarRepeatButton}"
-                                              Command="ScrollBar.PageDownCommand"/>
+                                <RepeatButton Command="ScrollBar.PageDownCommand" Background="Transparent" BorderThickness="0" Focusable="False"/>
                             </Track.IncreaseRepeatButton>
                         </Track>
+                        <RepeatButton x:Name="PART_LineDownButton" Grid.Row="2" Command="ScrollBar.LineDownCommand"
+                                      Style="{StaticResource DarkScrollBarRepeatButton}">
+                            <Viewbox Width="12" Height="12" Margin="2,3,2,1">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource DownArrowGeometry}" Fill="{StaticResource TextMuted}" Stretch="Uniform"/>
+                                </Canvas>
+                            </Viewbox>
+                        </RepeatButton>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -260,25 +305,44 @@
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>
                 <Setter Property="MinWidth" Value="0"/>
-                <Setter Property="Height" Value="10"/>
-                <Setter Property="MinHeight" Value="10"/>
+                <Setter Property="Height" Value="16"/>
+                <Setter Property="MinHeight" Value="16"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ScrollBar">
-                            <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                <Track x:Name="PART_Track" IsEnabled="{TemplateBinding IsMouseOver}">
+                            <Grid SnapsToDevicePixels="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MaxWidth="16"/>
+                                    <ColumnDefinition Width="0.00001*"/>
+                                    <ColumnDefinition Width="Auto" MaxWidth="16"/>
+                                </Grid.ColumnDefinitions>
+                                <RepeatButton x:Name="PART_LineLeftButton" Grid.Column="0" Command="ScrollBar.LineLeftCommand"
+                                              Style="{StaticResource DarkScrollBarRepeatButton}">
+                                    <Viewbox Width="12" Height="12" Margin="3,2,1,2">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{StaticResource LeftArrowGeometry}" Fill="{StaticResource TextMuted}" Stretch="Uniform"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </RepeatButton>
+                                <Track x:Name="PART_Track" Grid.Column="1" IsEnabled="True">
                                     <Track.DecreaseRepeatButton>
-                                        <RepeatButton Style="{StaticResource DarkScrollBarRepeatButton}"
-                                                      Command="ScrollBar.PageLeftCommand"/>
+                                        <RepeatButton Command="ScrollBar.PageLeftCommand" Background="Transparent" BorderThickness="0" Focusable="False"/>
                                     </Track.DecreaseRepeatButton>
                                     <Track.Thumb>
                                         <Thumb Style="{StaticResource DarkScrollBarThumb}"/>
                                     </Track.Thumb>
                                     <Track.IncreaseRepeatButton>
-                                        <RepeatButton Style="{StaticResource DarkScrollBarRepeatButton}"
-                                                      Command="ScrollBar.PageRightCommand"/>
+                                        <RepeatButton Command="ScrollBar.PageRightCommand" Background="Transparent" BorderThickness="0" Focusable="False"/>
                                     </Track.IncreaseRepeatButton>
                                 </Track>
+                                <RepeatButton x:Name="PART_LineRightButton" Grid.Column="2" Command="ScrollBar.LineRightCommand"
+                                              Style="{StaticResource DarkScrollBarRepeatButton}">
+                                    <Viewbox Width="12" Height="12" Margin="3,2,1,2">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{StaticResource RightArrowGeometry}" Fill="{StaticResource TextMuted}" Stretch="Uniform"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </RepeatButton>
                             </Grid>
                         </ControlTemplate>
                     </Setter.Value>
