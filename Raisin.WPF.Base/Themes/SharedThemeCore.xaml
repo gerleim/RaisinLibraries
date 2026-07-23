@@ -223,8 +223,8 @@
         </Setter>
     </Style>
     <Style x:Key="DarkScrollBarRepeatButton" TargetType="RepeatButton">
-        <Setter Property="Background" Value="#424245"/>
-        <Setter Property="BorderBrush" Value="#424245"/>
+        <Setter Property="Background" Value="#757575"/>
+        <Setter Property="BorderBrush" Value="#757575"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Focusable" Value="False"/>
@@ -246,9 +246,9 @@
                             <BeginStoryboard>
                                 <Storyboard>
                                     <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Background.Color"
-                                                    To="#5F5F63" Duration="0:0:0.2" />
+                                                    To="#FFFFFF" Duration="0:0:0.2" />
                                     <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="BorderBrush.Color"
-                                                    To="#5F5F63" Duration="0:0:0.2" />
+                                                    To="#FFFFFF" Duration="0:0:0.2" />
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
@@ -310,7 +310,7 @@
                                       Style="{StaticResource DarkScrollBarRepeatButton}">
                             <Viewbox Width="12" Height="12" Margin="2,3,2,1">
                                 <Canvas Width="24" Height="24">
-                                    <Path Data="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" Fill="#898989" Stretch="Uniform"/>
+                                    <Path Data="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" Fill="#757575" Stretch="Uniform"/>
                                 </Canvas>
                             </Viewbox>
                         </RepeatButton>
