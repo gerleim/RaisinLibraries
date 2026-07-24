@@ -302,6 +302,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ScrollBar}">
                     <Grid x:Name="Bg"
+                          Background="#323232"
                           Opacity="0.5"
                           SnapsToDevicePixels="true">
                         <Grid.RowDefinitions>
@@ -309,27 +310,28 @@
                             <RowDefinition Height="0.00001*" />
                             <RowDefinition Height="Auto" MaxHeight="{DynamicResource {x:Static SystemParameters.VerticalScrollBarButtonHeightKey}}" />
                         </Grid.RowDefinitions>
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
-                                <VisualState x:Name="MouseOver">
+                        <Grid.Triggers>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="Bg"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="0.8"
-                                                         Duration="0:0:0.2" />
+                                                       Storyboard.TargetProperty="Opacity"
+                                                       To="0.8"
+                                                       Duration="0:0:0.2" />
                                     </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="Bg"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="0.35"
-                                                         Duration="0:0:0.2" />
+                                                       Storyboard.TargetProperty="Opacity"
+                                                       To="0.5"
+                                                       Duration="0:0:0.2" />
                                     </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Grid.Triggers>
                         <Border Grid.Row="1"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
@@ -398,6 +400,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ScrollBar}">
                             <Grid x:Name="Bg"
+                                  Background="#323232"
                                   Opacity="0.5"
                                   SnapsToDevicePixels="true">
                                 <Grid.ColumnDefinitions>
@@ -405,27 +408,6 @@
                                     <ColumnDefinition Width="0.00001*" />
                                     <ColumnDefinition Width="Auto" MaxWidth="{DynamicResource {x:Static SystemParameters.HorizontalScrollBarButtonWidthKey}}" />
                                 </Grid.ColumnDefinitions>
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal" />
-                                        <VisualState x:Name="MouseOver">
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="Bg"
-                                                                 Storyboard.TargetProperty="Opacity"
-                                                                 To="0.8"
-                                                                 Duration="0:0:0.2" />
-                                            </Storyboard>
-                                        </VisualState>
-                                        <VisualState x:Name="Disabled">
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="Bg"
-                                                                 Storyboard.TargetProperty="Opacity"
-                                                                 To="0.35"
-                                                                 Duration="0:0:0.2" />
-                                            </Storyboard>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
                                 <Border Grid.Column="1"
                                         Background="{TemplateBinding Background}"
                                         BorderBrush="{TemplateBinding BorderBrush}"
