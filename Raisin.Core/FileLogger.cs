@@ -7,12 +7,20 @@ namespace Raisin.Core;
 public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArgs>, IDisposable
 #pragma warning restore CS0618
 {
+    // Writes are buffered and flushed on a timer rather than per line: flushing every
+    // line costs a write syscall while holding sync, which serialises every thread that
+    // logs. Warning and above still flush immediately, so whatever explains a crash is
+    // on disk before it happens.
+    private static readonly TimeSpan FlushInterval = TimeSpan.FromSeconds(1);
+
     private readonly string _logDirectory;
     private readonly string _baseName;
     private readonly string _extension;
     private readonly object sync = new();
+    private readonly Timer _flushTimer;
     private StreamWriter _writer;
     private DateOnly _currentDate;
+    private bool _pendingFlush;
     private bool _disposed;
 
     public FileLogger(Raisin.EventSystem.EventSystem es, string basePath, int retentionDays = 30)
@@ -25,7 +33,8 @@ public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArg
             Directory.CreateDirectory(_logDirectory);
 
         _currentDate = DateOnly.FromDateTime(DateTime.Now);
-        _writer = new StreamWriter(GetLogFilePath(_currentDate), append: true) { AutoFlush = true };
+        _writer = CreateWriter(_currentDate);
+        _flushTimer = new Timer(_ => FlushPending(), null, FlushInterval, FlushInterval);
 
         CleanupOldLogs(retentionDays);
         es.SubscribeAll(this);
@@ -33,6 +42,24 @@ public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArg
 
     private string GetLogFilePath(DateOnly date)
         => Path.Combine(_logDirectory, $"{_baseName}-{date:yyyy-MM-dd}{_extension}");
+
+    // AutoFlush stays off on every writer this class opens, including after a date rollover.
+    private StreamWriter CreateWriter(DateOnly date)
+        => new(GetLogFilePath(date), append: true) { AutoFlush = false };
+
+    private void FlushPending()
+    {
+        lock (sync)
+        {
+            if (_disposed || !_pendingFlush) return;
+            try
+            {
+                _writer.Flush();
+                _pendingFlush = false;
+            }
+            catch (IOException) { }
+        }
+    }
 
     private void CleanupOldLogs(int retentionDays)
     {
@@ -78,9 +105,20 @@ public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArg
                     _writer.Flush();
                     _writer.Close();
                     _currentDate = today;
-                    _writer = new StreamWriter(GetLogFilePath(today), append: true) { AutoFlush = true };
+                    _writer = CreateWriter(today);
+                    _pendingFlush = false;
                 }
                 _writer.WriteLine(line);
+
+                if (severity >= LogSeverity.Warning)
+                {
+                    _writer.Flush();
+                    _pendingFlush = false;
+                }
+                else
+                {
+                    _pendingFlush = true;
+                }
             }
         }
         catch (IOException) { }
@@ -93,6 +131,8 @@ public class FileLogger : IEventSubscriber<MessageArgs>, IEventSubscriber<LogArg
 
     public void Dispose()
     {
+        // Before the lock: the callback takes sync, and Timer.Dispose is idempotent.
+        _flushTimer.Dispose();
         lock (sync)
         {
             if (_disposed) return;

@@ -5,7 +5,7 @@ Shared core utilities for .NET 8 desktop applications — file logging, atomic w
 ## Features
 
 - **SafeFile** — Atomic file I/O via temp-file-and-replace, preventing corruption on crash or power loss
-- **FileLogger** — Rolling daily file logger that subscribes to [Raisin.EventSystem](https://www.nuget.org/packages/Raisin.EventSystem) events, with configurable retention and automatic cleanup
+- **FileLogger** — Rolling daily file logger that subscribes to [Raisin.EventSystem](https://www.nuget.org/packages/Raisin.EventSystem) events, with configurable retention and automatic cleanup. Writes are buffered and flushed once per second; `Warning` and above flush immediately
 - **DpapiStringProtector** — Windows DPAPI-based encryption for storing credentials and secrets per-user (implements `IStringProtector`)
 - **AppPaths** — Centralized application path management with support for portable and roaming (AppData) modes, including migration between the two
 - **ParentProcessWatcher** — Monitor a parent process lifetime via `--parent-pid` command-line argument and react when it exits
