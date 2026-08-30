@@ -7,6 +7,7 @@
   <Folder Name="/Tests/">
     <Project Path="Tests/Raisin.EventSystem.Tests/Raisin.EventSystem.Tests.csproj" />
     <Project Path="Tests/Raisin.App.Base.Tests/Raisin.App.Base.Tests.csproj" />
+    <Project Path="Tests/Raisin.Core.Tests/Raisin.Core.Tests.csproj" />
   </Folder>
   <Folder Name="/Tools/">
     <Project Path="Tools/StyleTestbed/StyleTestbed.csproj" />
