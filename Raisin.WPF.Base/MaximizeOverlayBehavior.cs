@@ -244,8 +244,35 @@ public class MaximizeOverlayBehavior : IMaximizeHost
         return null;
     }
 
+    /// <summary>
+    /// Where a window actually is on screen, in device-independent units.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately not <c>Left</c>/<c>Top</c>/<c>Width</c>/<c>Height</c>: while a window is maximized
+    /// those still report its <i>restore</i> bounds, so anything positioned from them lands where the
+    /// window would be if it were un-maximized. It only ever looked right because a floating window is
+    /// usually not maximized.
+    /// <para>
+    /// The rendered size and the on-screen origin are correct in both states. The origin comes back in
+    /// device pixels, so it is transformed to match the units the Window properties are set in —
+    /// without that the overlay drifts on any display not at 100% scaling.
+    /// </para>
+    /// </remarks>
+    private static Rect GetScreenBounds(Window window)
+    {
+        var origin = new Point(window.Left, window.Top);
+
+        if (PresentationSource.FromVisual(window) is { } source)
+            origin = source.CompositionTarget.TransformFromDevice
+                .Transform(window.PointToScreen(new Point(0, 0)));
+
+        return new Rect(origin, new Size(window.ActualWidth, window.ActualHeight));
+    }
+
     private Window CreateFloatingOverlay(Window hostWindow, FrameworkElement view)
     {
+        var bounds = GetScreenBounds(hostWindow);
+
         var overlay = new Window
         {
             WindowStyle = WindowStyle.None,
@@ -254,10 +281,10 @@ public class MaximizeOverlayBehavior : IMaximizeHost
             Owner = hostWindow,
             ShowInTaskbar = false,
             ResizeMode = ResizeMode.NoResize,
-            Left = hostWindow.Left,
-            Top = hostWindow.Top,
-            Width = hostWindow.Width,
-            Height = hostWindow.Height,
+            Left = bounds.Left,
+            Top = bounds.Top,
+            Width = bounds.Width,
+            Height = bounds.Height,
         };
 
         var border = new Border
@@ -268,8 +295,8 @@ public class MaximizeOverlayBehavior : IMaximizeHost
             BorderBrush = new SolidColorBrush(Color.FromRgb(0x50, 0x50, 0x50)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(4),
-            Width = hostWindow.Width * 0.9,
-            Height = hostWindow.Height * 0.9,
+            Width = bounds.Width * 0.9,
+            Height = bounds.Height * 0.9,
             Child = view,
         };
         border.MouseLeftButtonDown += (_, e) => e.Handled = true;
