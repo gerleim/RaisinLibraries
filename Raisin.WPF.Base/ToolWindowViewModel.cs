@@ -73,7 +73,10 @@ public abstract class ToolWindowViewModel : ViewModelBase
     {
         List<ToolWindowViewModel> snapshot;
         lock (_lock) { snapshot = _allInstances.ToList(); }
-        var groups = snapshot.GroupBy(vm => vm._baseTitle);
+        // Windows that never called UpdateBaseTitle set Title themselves; numbering them
+        // together would collapse unrelated titles into a bare " (2)".
+        var groups = snapshot.Where(vm => vm._baseTitle.Length > 0)
+                             .GroupBy(vm => vm._baseTitle);
         foreach (var group in groups)
         {
             var list = group.ToList();
@@ -89,7 +92,13 @@ public abstract class ToolWindowViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Closes the window. Instances register themselves on construction, so overrides
+    /// must call <c>base.OnClose()</c> to stop counting toward duplicate-title
+    /// numbering once the tab is gone.
+    /// </summary>
     public virtual void OnClose()
     {
+        UnregisterInstance();
     }
 }
