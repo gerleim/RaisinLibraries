@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using AvalonDock;
 using AvalonDock.Layout;
 
@@ -16,6 +18,9 @@ public class MaximizeOverlayBehavior : IMaximizeHost
     private readonly Border _overlayBorder;
     private readonly ContentControl _overlayContent;
     private MaximizedViewState? _state;
+
+    /// <summary>Maximizes the active pane and restores it again - "fullscreen".</summary>
+    private const Key MaximizeKey = Key.F;
 
     private class MaximizedViewState
     {
@@ -127,6 +132,10 @@ public class MaximizeOverlayBehavior : IMaximizeHost
 
         window.PreviewKeyDown += OnPreviewKeyDown;
         window.Closing += OnClosing;
+
+        // Undocked panes live in their own windows, so the hotkey has to be hooked there too.
+        _dockingManager.LayoutFloatingWindowControlCreated += (_, e) =>
+            e.LayoutFloatingWindowControl.PreviewKeyDown += OnPreviewKeyDown;
     }
 
     private void InjectOverlay()
@@ -143,12 +152,102 @@ public class MaximizeOverlayBehavior : IMaximizeHost
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Handled) return;
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
         if (key == Key.Escape && _state is not null)
         {
             e.Handled = true;
             RestoreMaximizedView();
+            return;
         }
+
+        if (key == MaximizeKey && Keyboard.Modifiers == ModifierKeys.None && !IsTypingFocus())
+            e.Handled = ToggleMaximizeFor(sender as Window);
+    }
+
+    /// <summary>
+    /// Maximizes the active pane, or restores the maximized one. Returns false when the key
+    /// means nothing here - the active pane offers no maximize icon, or it sits in another
+    /// window - so the keystroke carries on to whoever else wants it.
+    /// </summary>
+    private bool ToggleMaximizeFor(Window? sourceWindow)
+    {
+        if (_state is not null)
+        {
+            RestoreMaximizedView();
+            return true;
+        }
+
+        if (_dockingManager.ActiveContent is not ToolWindowViewModel vm) return false;
+
+        var view = FindView(vm);
+        if (view is null) return false;
+
+        // Only the window the key was typed in gets to act on it.
+        if (sourceWindow is not null && Window.GetWindow(view) != sourceWindow) return false;
+
+        var button = FindMaximizeButton(view);
+        if (button is null || !button.IsVisible || !button.IsEnabled) return false;
+
+        button.Toggle();
+        return true;
+    }
+
+    private FrameworkElement? FindView(ToolWindowViewModel vm)
+    {
+        var found = FindView(_dockingManager, vm);
+        if (found is not null) return found;
+
+        foreach (var fw in _dockingManager.FloatingWindows)
+        {
+            found = FindView(fw, vm);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static FrameworkElement? FindView(DependencyObject root, ToolWindowViewModel vm)
+    {
+        if (root is UserControl uc && ReferenceEquals(uc.DataContext, vm)) return uc;
+
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var found = FindView(VisualTreeHelper.GetChild(root, i), vm);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static MaximizeButton? FindMaximizeButton(DependencyObject root)
+    {
+        if (root is MaximizeButton button) return button;
+
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var found = FindMaximizeButton(VisualTreeHelper.GetChild(root, i));
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// True while the keystroke belongs to whatever has focus, i.e. text entry.
+    /// </summary>
+    private static bool IsTypingFocus()
+    {
+        for (DependencyObject? d = Keyboard.FocusedElement as DependencyObject; d is not null;
+             d = d is Visual or Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+        {
+            switch (d)
+            {
+                case TextBoxBase:
+                case PasswordBox:
+                case ComboBox { IsEditable: true }:
+                    return true;
+            }
+        }
+        return false;
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)
@@ -316,7 +415,8 @@ public class MaximizeOverlayBehavior : IMaximizeHost
         overlay.PreviewKeyDown += (_, e) =>
         {
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
-            if (key == Key.Escape)
+            if (key == Key.Escape
+                || (key == MaximizeKey && Keyboard.Modifiers == ModifierKeys.None && !IsTypingFocus()))
             {
                 e.Handled = true;
                 RestoreMaximizedView();

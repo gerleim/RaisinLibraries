@@ -49,6 +49,15 @@ public class MaximizeButton : Button
     protected override void OnClick()
     {
         base.OnClick();
+        Toggle();
+    }
+
+    /// <summary>
+    /// Maximizes the owning view, or restores it when already maximized. Shared with the
+    /// maximize hotkey so the key and the icon can never take different paths.
+    /// </summary>
+    public void Toggle()
+    {
         var view = FindAncestorView();
         if (view is null || view.DataContext is not ToolWindowViewModel vm) return;
         var host = MaximizeOverlayBehavior.FindHost(this);
