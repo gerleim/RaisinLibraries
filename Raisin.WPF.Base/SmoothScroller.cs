@@ -46,6 +46,26 @@ public class SmoothScroller
     /// </remarks>
     public event Action<double, bool>? Frame;
 
+    /// <summary>
+    /// Seconds per refresh of the display the scrolled window is on, so repaints can be capped
+    /// at what that panel can show. Zero, the default, means no cap.
+    /// </summary>
+    /// <remarks>
+    /// WPF does not pace a window to the panel it occupies: a window moved from a fast display
+    /// to a slow one keeps composing at the fast rate, so repainting once per composed frame
+    /// draws several frames for every one the panel shows. The offset still decays every
+    /// frame, so the motion is unchanged - only the repaint is skipped.
+    ///
+    /// Set by the host from its window's WindowDisplayInfo, and set again when that reports a
+    /// change, so a window dragged to another monitor mid-animation is honoured on the next
+    /// frame. Deliberately a value rather than a callback: asking the display a question is
+    /// not this class's job, a callback would be a pull for something that changes by push,
+    /// and one capturing a window is how a long-lived scroller keeps that window alive.
+    /// </remarks>
+    public double DisplayPeriod { get; set; }
+
+    private double _sinceDisplayFrame;
+
     public SmoothScroller(Action invalidateVisual, Func<bool>? canStop = null)
     {
         _invalidateVisual = invalidateVisual;
@@ -57,6 +77,8 @@ public class SmoothScroller
         if (_isAnimating) return;
         _isAnimating = true;
         _lastRenderingTime = TimeSpan.Zero;
+
+        _sinceDisplayFrame = DisplayPeriod;   // let the first frame paint at once
         if (!ManualMode)
             CompositionTarget.Rendering += OnFrame;
         _invalidateVisual();
@@ -166,8 +188,33 @@ public class SmoothScroller
         if (!duplicate || stopped)
             Frame?.Invoke(duplicate || !measured ? 0 : elapsed, stopped);
 
-        if (stopped || duplicate)
+        // The settled position is always drawn. It is the frame that stays on screen, and
+        // with a cap in place the frames before it may well have been skipped.
+        if (stopped)
+        {
+            _invalidateVisual();
             return;
+        }
+
+        if (duplicate)
+            return;
+
+        // Capped at what the panel can show. Skipping the repaint does not stall the loop:
+        // Rendering keeps firing while the handler is attached, which the wheel path relies
+        // on already - 3710 callbacks against 1236 repaints in a measured 21 second gesture.
+        // The period is subtracted rather than zeroed to keep the average exact, and arrears
+        // are clamped so a slow patch cannot be followed by a burst.
+        _sinceDisplayFrame += elapsed;
+        double period = DisplayPeriod;
+        if (period > 0)
+        {
+            if (_sinceDisplayFrame < period)
+                return;
+
+            _sinceDisplayFrame -= period;
+            if (_sinceDisplayFrame > period)
+                _sinceDisplayFrame = period;
+        }
 
         _invalidateVisual();
     }
