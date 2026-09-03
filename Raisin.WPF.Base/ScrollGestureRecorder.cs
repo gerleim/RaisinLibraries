@@ -23,7 +23,11 @@ namespace Raisin.WPF.Base;
 /// a window paced to the display it started on rather than the one it occupies - produces the
 /// old rate on the new monitor, which is indistinguishable from not having moved.
 /// </remarks>
-public sealed class ScrollGestureRecorder(string logPath)
+/// <param name="logPath">
+/// Resolved on each write rather than captured, so a host whose data directory is settled after
+/// startup - or differs per instance, as a --dev copy does - still writes to the right place.
+/// </param>
+public sealed class ScrollGestureRecorder(Func<string> logPath)
 {
     private readonly List<double> _frameGaps = new(512);
     private readonly List<double> _paintGaps = new(512);
@@ -198,8 +202,9 @@ public sealed class ScrollGestureRecorder(string logPath)
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
-            File.AppendAllText(logPath, line + Environment.NewLine);
+            string path = logPath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.AppendAllText(path, line + Environment.NewLine);
         }
         catch (IOException) { }
         catch (UnauthorizedAccessException) { }
