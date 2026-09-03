@@ -65,6 +65,25 @@ public sealed class ScrollGestureRecorder(Func<string> logPath)
         Write($"{DateTime.Now:HH:mm:ss.fff}  {text}");
     }
 
+    /// <summary>
+    /// Reports a duration already measured by the caller, under <paramref name="label"/>.
+    /// </summary>
+    /// <remarks>
+    /// The counterpart to Time for code that is already timing itself, and for hot paths where
+    /// handing over a lambda would allocate a closure on every call. A render loop running
+    /// hundreds of times a second is exactly that.
+    /// </remarks>
+    public void Record(string label, double milliseconds)
+    {
+        if (!Enabled) return;
+
+        lock (_costLock)
+        {
+            _costs.TryGetValue(label, out var c);
+            _costs[label] = (Math.Max(c.Max, milliseconds), c.Total + milliseconds, c.Count + 1);
+        }
+    }
+
     /// <summary>Times <paramref name="work"/> under <paramref name="label"/>.</summary>
     public void Time(string label, Action work)
     {
