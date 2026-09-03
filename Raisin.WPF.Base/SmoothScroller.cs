@@ -115,6 +115,7 @@ public class SmoothScroller
     private void OnFrame(object? sender, EventArgs e)
     {
         double elapsed = FrameInterval;
+        bool duplicate = false;
 
         // The priming frame has no previous stamp to measure against, so its elapsed time is
         // the assumed FrameInterval rather than anything observed. Reporting that as a frame
@@ -136,20 +137,36 @@ public class SmoothScroller
                 // Rendering fires more than once for the same frame. Invalidating on those
                 // duplicates is what makes the loop free-run: the repaint schedules another
                 // pass, which raises Rendering again, at several hundred a second rather than
-                // at the display's rate. Returning without repainting leaves one repaint per
-                // composed frame, and that repaint drives the next frame.
+                // at the display's rate. Skipping the repaint leaves one per composed frame,
+                // and that repaint drives the next frame.
+                //
+                // Skipping the repaint, though - not the whole callback. Returning here meant
+                // an animation whose last frame happened to be a duplicate never reached
+                // CheckStop: it stayed marked as animating for ever, so Start no-opped from
+                // then on and the scroll silently stopped animating until something called
+                // Cancel. Whether a frame is new decides what to redraw, never whether the
+                // animation is finished.
                 elapsed = (args.RenderingTime - _lastRenderingTime).TotalSeconds;
-                if (elapsed <= 0) return;
-
-                _lastRenderingTime = args.RenderingTime;
-                if (elapsed < 0.5)
-                    ApplyDecayWithDelay(elapsed);
+                if (elapsed <= 0)
+                {
+                    duplicate = true;
+                }
+                else
+                {
+                    _lastRenderingTime = args.RenderingTime;
+                    if (elapsed < 0.5)
+                        ApplyDecayWithDelay(elapsed);
+                }
             }
         }
 
+        // Always evaluated, on duplicate frames too, so settling can never be missed.
         bool stopped = CheckStop();
-        Frame?.Invoke(measured ? elapsed : 0, stopped);
-        if (stopped)
+
+        if (!duplicate || stopped)
+            Frame?.Invoke(duplicate || !measured ? 0 : elapsed, stopped);
+
+        if (stopped || duplicate)
             return;
 
         _invalidateVisual();
