@@ -34,6 +34,20 @@ Shared WPF base library for .NET 8 desktop applications — MVVM foundation, win
 - **LargeNumberConverter** — IValueConverter formatting numbers as 1.5B, 2.3M, 4.7K
 - **NumericInputBehavior** — Attached behavior restricting TextBox input to integers or decimals
 
+### High-frequency rendering
+
+- **WindowDisplayInfo** — Tracks the refresh rate of the display a window occupies, per top-level
+  window, and reports when it changes. WPF does not pace a window to the panel it is on, so
+  anything repainting per frame needs this to avoid drawing frames the panel cannot show
+- **SmoothScroller** — Frame-paced decaying scroll offset, with `DisplayPeriod` to cap repaints
+- **ScrollGestureRecorder** — Records a gesture's frame and paint cadence, pixel steps, GC counts
+  and per-piece costs to a log
+
+See [docs/High-Frequency-Rendering.md](docs/High-Frequency-Rendering.md) before writing any
+per-frame animation or continuous-repaint code — what WPF does with a frame, the
+`CompositionTarget.Rendering` traps, multi-monitor pacing, what actually limits the composition
+rate, and how to measure any of it.
+
 ## Installation
 
 ```
