@@ -49,10 +49,10 @@ public static class GridSettingsService
         return all.GetValueOrDefault(key);
     }
 
-    public static void Save(string key, Dictionary<int, double> widths)
+    public static void Save(string key, GridState state)
     {
         var all = LoadAll();
-        all[key] = new GridState { ColumnWidths = widths };
+        all[key] = state;
         WriteFile(all);
     }
 
@@ -96,7 +96,43 @@ public static class GridSettingsService
     }
 }
 
+/// <summary>
+/// How a column decides its width. A mode is a standing instruction re-applied on every load, so a
+/// column set to <see cref="Content"/> re-measures against today's values instead of restoring a
+/// number measured on some earlier day.
+/// </summary>
+public enum ColumnSizeMode
+{
+    /// <summary>An exact pixel width, as left by dragging the gripper.</summary>
+    Fixed,
+    /// <summary>Wide enough for the header text.</summary>
+    Header,
+    /// <summary>Wide enough for the cells, ignoring the header.</summary>
+    Content,
+    /// <summary>Wide enough for whichever of the two is wider — WPF's Auto.</summary>
+    Both,
+}
+
+public class ColumnSetting
+{
+    public ColumnSizeMode Mode { get; set; } = ColumnSizeMode.Fixed;
+
+    /// <summary>Pixels. Only meaningful for <see cref="ColumnSizeMode.Fixed"/>.</summary>
+    public double Width { get; set; }
+}
+
 public class GridState
 {
+    /// <summary>
+    /// Widths by column INDEX, written by versions before per-column settings existed. Read as a
+    /// fallback when <see cref="Columns"/> is empty so an upgrade does not reset anyone's layout;
+    /// never written any more.
+    /// </summary>
     public Dictionary<int, double> ColumnWidths { get; set; } = [];
+
+    /// <summary>
+    /// Per-column settings keyed by column identity rather than position, so reordering columns no
+    /// longer hands each one its neighbour's width.
+    /// </summary>
+    public Dictionary<string, ColumnSetting> Columns { get; set; } = [];
 }
