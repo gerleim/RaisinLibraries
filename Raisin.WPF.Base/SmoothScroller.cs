@@ -47,6 +47,18 @@ public class SmoothScroller
     public event Action<double, bool>? Frame;
 
     /// <summary>
+    /// Raised immediately before each repaint this scroller asks for.
+    /// </summary>
+    /// <remarks>
+    /// Frame fires for every composed frame; this fires only for the ones that survive the
+    /// DisplayPeriod cap and actually reach the screen. Measuring the interval between paints
+    /// is the whole point of the exercise - it is what showed 279 paints a second going to a
+    /// panel that could show 60 - so a subscriber needs to be told which frames those were,
+    /// and cannot work it out from Frame.
+    /// </remarks>
+    public event Action? Painted;
+
+    /// <summary>
     /// Seconds per refresh of the display the scrolled window is on, so repaints can be capped
     /// at what that panel can show. Zero, the default, means no cap.
     /// </summary>
@@ -192,6 +204,7 @@ public class SmoothScroller
         // with a cap in place the frames before it may well have been skipped.
         if (stopped)
         {
+            Painted?.Invoke();
             _invalidateVisual();
             return;
         }
@@ -216,6 +229,7 @@ public class SmoothScroller
                 _sinceDisplayFrame = period;
         }
 
+        Painted?.Invoke();
         _invalidateVisual();
     }
 
