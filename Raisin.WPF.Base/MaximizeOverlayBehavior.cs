@@ -171,10 +171,19 @@ public class MaximizeOverlayBehavior : IMaximizeHost
     /// means nothing here - the active pane offers no maximize icon, or it sits in another
     /// window - so the keystroke carries on to whoever else wants it.
     /// </summary>
+    /// <remarks>
+    /// A keystroke in an undocked pane reaches the main window's handler too - AvalonDock parents
+    /// that content back onto the DockingManager, so one route spans both windows (see
+    /// <see cref="FindView"/>). Handling the key stops the route, so in practice the pane's own
+    /// window answers first and the main window never sees it; both branches check the window
+    /// anyway, so that a second delivery could never undo the first.
+    /// </remarks>
     private bool ToggleMaximizeFor(Window? sourceWindow)
     {
         if (_state is not null)
         {
+            if (sourceWindow is not null && HostWindowFor(_state.ViewModel) != sourceWindow)
+                return false;
             RestoreMaximizedView();
             return true;
         }
@@ -184,8 +193,7 @@ public class MaximizeOverlayBehavior : IMaximizeHost
         var view = FindView(vm);
         if (view is null) return false;
 
-        // Only the window the key was typed in gets to act on it.
-        if (sourceWindow is not null && Window.GetWindow(view) != sourceWindow) return false;
+        if (sourceWindow is not null && HostWindowFor(vm) != sourceWindow) return false;
 
         var button = FindMaximizeButton(view);
         if (button is null || !button.IsVisible || !button.IsEnabled) return false;
@@ -194,14 +202,25 @@ public class MaximizeOverlayBehavior : IMaximizeHost
         return true;
     }
 
+    /// <summary>
+    /// The view showing <paramref name="vm"/>, docked or undocked.
+    /// </summary>
+    /// <remarks>
+    /// Searching the floating window controls themselves finds nothing: AvalonDock hosts an
+    /// undocked pane in an <c>HwndHost</c> with its own <c>HwndSource</c>, so that content is a
+    /// visual descendant of no window in this process's main tree. What it does do is add the
+    /// content root as a <i>logical</i> child of the DockingManager - so the logical children are
+    /// the way in, and from each of those the ordinary visual walk works again.
+    /// </remarks>
     private FrameworkElement? FindView(ToolWindowViewModel vm)
     {
         var found = FindView(_dockingManager, vm);
         if (found is not null) return found;
 
-        foreach (var fw in _dockingManager.FloatingWindows)
+        foreach (var child in LogicalTreeHelper.GetChildren(_dockingManager))
         {
-            found = FindView(fw, vm);
+            if (child is not DependencyObject d) continue;
+            found = FindView(d, vm);
             if (found is not null) return found;
         }
         return null;
@@ -264,7 +283,7 @@ public class MaximizeOverlayBehavior : IMaximizeHost
     {
         if (_state is not null) return false;
 
-        var hostWindow = FindFloatingWindowFor(vm) ?? _window;
+        var hostWindow = HostWindowFor(vm);
 
         if (VisualTreeHelper.GetParent(view) is not ContentPresenter cp)
             return false;
@@ -331,6 +350,18 @@ public class MaximizeOverlayBehavior : IMaximizeHost
         state.ContentPresenter.ContentTemplate = state.OriginalTemplate;
         state.ViewModel.IsMaximizedOverlay = false;
     }
+
+    /// <summary>
+    /// The window a pane's maximize actually happens in: the main window for a docked pane, its
+    /// own floating window for an undocked one.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately not <see cref="Window.GetWindow"/> on the view. AvalonDock adds an undocked
+    /// pane's content root as a logical child of the DockingManager, so walking up from any view
+    /// arrives at the main window whichever window the pane is really showing in. Only the layout
+    /// model knows, which is why <see cref="MaximizeView"/> places its overlay from this too.
+    /// </remarks>
+    private Window HostWindowFor(ToolWindowViewModel vm) => FindFloatingWindowFor(vm) ?? _window;
 
     private Window? FindFloatingWindowFor(ToolWindowViewModel vm)
     {
