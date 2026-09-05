@@ -24,6 +24,7 @@ things are, selecting a tab, setting a range. Only the gesture under measurement
 | `SyntheticInput.Drag` | press, stepped moves, release |
 | `SyntheticInput.PreservingCursor` | put the pointer back afterwards |
 | `TargetWindow` | bounds, placement, working-area fill, and a fractional aim point |
+| `Displays` | what panels are attached, at what **refresh rate**, and which one a window is on |
 
 No package references. It is user32 and kernel32, so a driver that only needs to move a cursor does
 not drag a UI Automation stack in behind it. A consumer that also needs to *find* elements adds
@@ -48,6 +49,12 @@ continuous repaint a real drag causes — usually the load being measured — ne
 **Aim at the control, not the centre.** Docked panes take fixed widths, so at small window sizes the
 geometric centre lands on a splitter or a neighbour. `TargetWindow.PointAt` takes fractions so a
 caller can aim deliberately.
+
+**A frame rate means nothing without the refresh rate it was measured against.** The frame budget
+is the refresh period, and it spans 3.57 ms to 16.67 ms across ordinary desktop panels - so the
+same code looks fine on one monitor and marginal on another. `Displays` reports the rate, which
+`System.Windows.Forms.Screen` does not; `Displays.For(bounds)` says which panel a window is
+actually on, by largest overlap, so a run labels itself rather than trusting what was requested.
 
 Synthetic **keyboard** input is deliberately absent: it was tried against a terminal control and
 never arrived, by either `KEYEVENTF_UNICODE` or real virtual keys. Design around needing to type.
