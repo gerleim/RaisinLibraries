@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Raisin.WPF.Automation</RootNamespace>
+
+    <PackageId>Raisin.WPF.Automation</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>gerleim</Authors>
+    <Description>Drives a WPF app from outside its process for measurement runs — foreground handling, synthetic mouse and wheel input, window placement</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/gerleim/RaisinLibraries</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gerleim/RaisinLibraries</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!--
+    No package references, deliberately. Everything here is user32 and kernel32, and a driver that
+    only needs to move a cursor should not drag a UI Automation stack in behind it. A consumer that
+    also needs to *find* elements adds FlaUI itself and uses both.
+  -->
+
+</Project>
