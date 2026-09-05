@@ -18,10 +18,15 @@ dotnet test RaisinLibraries.slnx
 | **Raisin.Core** | net8.0 | File logging, atomic writes (SafeFile), DPAPI credentials, app paths |
 | **Raisin.App.Base** | net8.0 | Environment abstraction, DI wiring, binary search, text filtering |
 | **Raisin.WPF.Base** | net8.0-windows | MVVM base classes, window management, docking layout, settings |
+| **Raisin.WPF.Automation** | net8.0-windows | Drives a WPF app from outside its process for measurement runs — foreground handling, synthetic mouse and wheel input, window placement. No package references |
 
 Dependency chain: `EventSystem → Core → App.Base → WPF.Base`
 
 Test projects are under `Tests/`, one per library.
+
+`Tools/get-presentmon.ps1` fetches PresentMon at a pinned version into `%LOCALAPPDATA%\Raisin\tools`.
+It is how a harness finds out what the display actually showed rather than what the app asked for;
+the version is pinned because PresentMon renames its CSV columns between major versions.
 
 ## Conventions
 - File-scoped namespaces
