@@ -25,6 +25,7 @@ things are, selecting a tab, setting a range. Only the gesture under measurement
 | `SyntheticInput.PreservingCursor` | put the pointer back afterwards |
 | `TargetWindow` | bounds, placement, working-area fill, and a fractional aim point |
 | `Displays` | what panels are attached, at what **refresh rate**, and which one a window is on |
+| `RunGuard` | notices interference, and lets whoever is at the machine cancel with **Escape** |
 
 No package references. It is user32 and kernel32, so a driver that only needs to move a cursor does
 not drag a UI Automation stack in behind it. A consumer that also needs to *find* elements adds
@@ -58,6 +59,15 @@ actually on, by largest overlap, so a run labels itself rather than trusting wha
 
 Synthetic **keyboard** input is deliberately absent: it was tried against a terminal control and
 never arrived, by either `KEYEVENTF_UNICODE` or real virtual keys. Design around needing to type.
+
+**A run nobody can stop gets interfered with.** These two are the same problem. A gesture that has
+taken the pointer and cannot be told to stop leaves the person at the machine waiting for it, and
+eventually they take the mouse back - at which point the run is still completing, the log is still
+filling, and the numbers describe the harness mixed with a human, with nothing in the output saying
+so. `RunGuard` closes both halves: hold **Escape** and the gesture is abandoned (releasing the mouse
+button if a drag was in flight, and putting the cursor back), and if the foreground, the window
+rectangle, or the pointer moves without the harness having moved it, the run is recorded as
+contaminated rather than reported as data.
 
 ## The trap it cannot save you from
 

@@ -74,7 +74,33 @@ public static class SyntheticInput
     public static Point CursorPosition
     {
         get { GetCursorPos(out var p); return p; }
-        set { SetCursorPos(value.X, value.Y); }
+        set { LastCommanded = value; SetCursorPos(value.X, value.Y); }
+    }
+
+    /// <summary>Where this class last put the cursor, or null if it never has.</summary>
+    /// <remarks>
+    /// Kept so a watcher can tell a pointer the harness moved from one a person moved. Without it
+    /// the two are indistinguishable, and interference during a run is invisible.
+    /// </remarks>
+    public static Point? LastCommanded { get; private set; }
+
+    /// <summary>
+    /// Consulted between individual input events; when it returns true, the gesture is abandoned.
+    /// </summary>
+    /// <remarks>
+    /// Checked inside the loops rather than only between gestures, because the loops are where the
+    /// time goes: a sustained scroll or a stepped drag runs for seconds, and a cancellation that
+    /// takes effect only at the next gesture boundary is not one anybody will trust.
+    ///
+    /// <see cref="RunGuard"/> sets this. Null means no checking, which is what an unwatched test
+    /// wants.
+    /// </remarks>
+    public static Func<bool>? ShouldAbort { get; set; }
+
+    private static void AbortIfAsked()
+    {
+        if (ShouldAbort?.Invoke() == true)
+            throw new OperationCanceledException("cancelled part-way through a gesture");
     }
 
     /// <summary>
@@ -95,6 +121,7 @@ public static class SyntheticInput
         var step = Math.Sign(notches);
         for (var i = 0; i < Math.Abs(notches); i++)
         {
+            AbortIfAsked();
             Send(MOUSEEVENTF_WHEEL, unchecked((uint)(step * WheelDelta)));
             if (gapMs > 0) Thread.Sleep(gapMs);
         }
@@ -119,6 +146,7 @@ public static class SyntheticInput
         {
             for (var i = 1; i <= steps; i++)
             {
+                AbortIfAsked();
                 CursorPosition = new Point(
                     from.X + (to.X - from.X) * i / steps,
                     from.Y + (to.Y - from.Y) * i / steps);
