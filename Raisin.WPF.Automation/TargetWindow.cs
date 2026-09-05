@@ -34,6 +34,7 @@ public sealed class TargetWindow(IntPtr handle)
     [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr hWnd, out RECT r);
     [DllImport("user32.dll")] private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int w, int h, bool repaint);
     [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr hWnd, int cmd);
+    [DllImport("user32.dll")] private static extern bool IsIconic(IntPtr hWnd);
 
     private const int SW_RESTORE = 9;
     private const int SW_MAXIMIZE = 3;
@@ -46,9 +47,25 @@ public sealed class TargetWindow(IntPtr handle)
             ? Rectangle.FromLTRB(r.Left, r.Top, r.Right, r.Bottom)
             : Rectangle.Empty;
 
-    /// <summary>Brings it to the front, or throws.</summary>
+    /// <summary>True while the window is minimised, and so has no usable position.</summary>
+    public bool IsMinimised => IsIconic(Handle);
+
+    /// <summary>Brings it to the front, restoring it first if it is minimised, or throws.</summary>
+    /// <remarks>
+    /// The restore is not a nicety. Windows parks a minimised window at -32000,-32000, and
+    /// <see cref="Bounds"/> reports that faithfully - so a caller that aimed at it would compute a
+    /// point far off-screen and send the gesture into nothing. It would look like every other
+    /// successful run.
+    /// </remarks>
     public void Focus(TimeSpan timeout, string what = "the target window")
-        => ForegroundWindow.EnsureOrThrow(Handle, timeout, what);
+    {
+        if (IsMinimised)
+        {
+            ShowWindow(Handle, SW_RESTORE);
+            Thread.Sleep(200);
+        }
+        ForegroundWindow.EnsureOrThrow(Handle, timeout, what);
+    }
 
     /// <summary>Puts the window at an exact rectangle.</summary>
     /// <remarks>
