@@ -63,6 +63,20 @@ public abstract class ToolWindowViewModel : ViewModelBase
         RefreshTitles();
     }
 
+    /// <summary>Every open tool window, as a snapshot taken under the lock.</summary>
+    /// <remarks>
+    /// Exposed so a host can enumerate what it currently has open without keeping a second list of
+    /// its own — two lists registered at the same two lifecycle points are two lists that can
+    /// disagree, and the one that is wrong is never the one being read.
+    ///
+    /// A copy rather than the list itself, because the caller would otherwise be iterating the live
+    /// collection while another thread adds to it.
+    /// </remarks>
+    public static IReadOnlyList<ToolWindowViewModel> OpenInstances()
+    {
+        lock (_lock) return _allInstances.ToList();
+    }
+
     protected void UnregisterInstance()
     {
         lock (_lock) _allInstances.Remove(this);
