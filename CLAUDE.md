@@ -25,6 +25,11 @@ Dependency chain: `EventSystem → Core → App.Base → WPF.Base`
 Test projects are under `Tests/`, one per library.
 
 `Tools/get-presentmon.ps1` fetches PresentMon at a pinned version into `%LOCALAPPDATA%\Raisin\tools`.
+`Tools/vblank-probe` reports each display's vblank period, which WPF does not expose.
+
+`design/WPF Presentation Timing.md` records what WPF does with multiple monitors of differing
+refresh rates, what it costs, and the two pacing arrangements that work. Read it before adding
+or changing any repaint rate limit - the obvious approach is measurably the wrong one.
 It is how a harness finds out what the display actually showed rather than what the app asked for;
 the version is pinned because PresentMon renames its CSV columns between major versions.
 
