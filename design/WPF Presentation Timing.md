@@ -73,10 +73,55 @@ vblank falls 0 to 3.57 ms before it, drifting every frame. **Knowing the vblank 
 you move a tick.** That spread is the floor: 1.27 ms median error at 60 Hz is what a uniform
 0-3.57 ms spread produces.
 
-Going below it means presenting outside WPF, on your own swapchain timed to the output's vblank. A
-paced-presenter prototype was measured on the 60 Hz panel and reached 1.20 ms against WPF's
-1.27 ms — the same floor — but it was presenting at 280/s rather than the panel's rate, so whether
-a swapchain properly bound to that output would do better is unknown.
+Going below it would mean presenting outside WPF, on your own swapchain. **That was tested, and it
+does not work.**
+
+A paced-presenter prototype — child HWND, flip-model swapchain, `FRAME_LATENCY_WAITABLE_OBJECT`,
+`MaximumFrameLatency = 1`, `Present(1, ...)` — was opened *positioned on the 60 Hz panel before the
+window was shown*, so the swapchain was created there rather than moved onto it. `GetContainingOutput`
+confirms DXGI associated it correctly:
+
+```
+asked for : \.\DISPLAY8
+bound to  : \.\DISPLAY8
+present gap  median 3.57ms (280/s)   over 1.5x median 0.0%
+```
+
+**Correctly bound to the 60 Hz output, and still presenting at 280/s** — the primary's rate. Display
+change comes back at 16.666 ms, the panel's own rate, with 77.6% of presents never shown and
+animation error at 1.202 ms against WPF's 1.27 ms. The same floor, reached the same way.
+
+The reason is in the capture: `PresentMode` is **`Composed: Flip`**. DWM composites the swapchain,
+and DWM composes on one clock. Owning the swapchain changes who draws the pixels, not who decides
+when composition happens. Escaping that needs independent flip — fullscreen exclusive, or a hardware
+overlay plane — which a windowed pane in a docked application does not get.
+
+**So a custom presenter does not fix the multi-monitor cadence problem.** It is bound by the same
+thing WPF is, for the same reason. That is now a direct reading rather than an inference.
+
+## What the presenter *is* better at, which is a different thing
+
+The same test on the primary, where the panel's refresh and the composition clock are both 3.57 ms:
+
+| on the 280 Hz primary | animation error p50 | never shown |
+|---|---|---|
+| WPF (RaisinDocs, full screen) | 0.78 ms | 2.6% |
+| paced presenter prototype | **0.029 ms** | **0.0%** |
+
+Twenty-seven times more accurate, with every present displayed. A tight render loop woken by the
+waitable object, computing its offset per present, keeps content and presentation in step far more
+closely than WPF's arrangement of "update on a composition tick, composite and present some time
+later".
+
+Read this with the workload in mind: the prototype clears the screen to a sweeping colour and
+nothing else. The C2 text-presenter measurement suggests the cadence survives real work — 0.14 ms
+of DirectWrite drawing per frame at 280/s, "not one frame late" — but that was measured on the
+primary too, and never against animation error.
+
+**This is not the multi-monitor problem and does not solve it.** It is a separate observation: on a
+display whose refresh already matches composition, a presenter is much more accurate than WPF. Whether
+0.78 ms matters is an application question — it is 22% of a 3.57 ms budget, and about a pixel at
+1000 px/s.
 
 ## Getting a panel's vblank phase
 
