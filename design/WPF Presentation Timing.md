@@ -96,8 +96,44 @@ and DWM composes on one clock. Owning the swapchain changes who draws the pixels
 when composition happens. Escaping that needs independent flip — fullscreen exclusive, or a hardware
 overlay plane — which a windowed pane in a docked application does not get.
 
-**So a custom presenter does not fix the multi-monitor cadence problem.** It is bound by the same
-thing WPF is, for the same reason. That is now a direct reading rather than an inference.
+**So a custom presenter in a normal window does not fix the multi-monitor cadence problem.** It is
+bound by the same thing WPF is, for the same reason.
+
+### Except that independent flip is reachable, and it does fix it
+
+The paragraph above originally ended the matter, on the reasoning that independent flip needs a
+surface owning a whole output and a windowed pane cannot have one. The first half is right. The
+second was never tested, and testing it changes the answer.
+
+A bare Win32 `WS_POPUP` covering the entire 60 Hz output — no border, over the taskbar, no other
+content, opaque, flip model — measured for 26 s:
+
+| on the 60 Hz panel | PresentMode | present gap | animation error | never shown |
+|---|---|---|---|---|
+| WPF, repainting every tick | `Composed: Copy with GPU GDI` | 3.57 ms | 1.27 ms | 74.6% |
+| windowed swapchain, child HWND | `Composed: Flip` | 3.57 ms | 1.20 ms | 77.6% |
+| **fullscreen borderless swapchain** | **`Hardware: Independent Flip`** | **16.666 ms** | **0.019 ms** | **0.0%** |
+
+**It paces to the panel's own vblank.** 60 presents a second on a 60 Hz panel, every one displayed,
+animation error at 0.019 ms — sixty-seven times better than WPF and two orders below the composition
+floor. The primary control behaves the same way at its own rate: 3.572 ms, 0.012 ms error, 0.0%
+unshown, reported as `Hardware Composed: Independent Flip`.
+
+So the floor described above is the floor **of DWM composition**, not of the machine. A surface that
+DWM hands to the display plane is not subject to it, and that surface can live on a secondary
+monitor.
+
+**What it costs to qualify.** Independent flip is granted, not requested, and the conditions are
+strict: the swapchain's window must cover the whole output, be opaque, use the flip model, and have
+nothing composited above it. That last one is the awkward one — a tooltip, a menu, a notification
+toast, or any other window overlapping that monitor drops the surface back to composed, silently and
+at runtime. There is no clean API to ask whether you currently have it; PresentMon can see it from
+outside, the process cannot easily see it from inside.
+
+**Where that leaves it.** Not a general answer for a docked, multi-pane window — that arrangement
+cannot qualify. It is a real answer for anything that can own a whole display: a chart given a
+dedicated monitor, a presentation or reading mode, a single-purpose window on a trading desk. On
+that shape it is not a marginal improvement over WPF, it is a different regime.
 
 ## What the presenter *is* better at, which is a different thing
 
