@@ -657,6 +657,7 @@
                 <ControlTemplate TargetType="ComboBox">
                     <Grid SnapsToDevicePixels="True">
                         <ToggleButton Focusable="False" Style="{x:Null}"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
@@ -777,6 +778,7 @@
                 <ControlTemplate TargetType="{x:Type controls:MultiSelectDropdown}">
                     <Grid>
                         <ToggleButton x:Name="PART_ToggleButton" Focusable="False" Style="{x:Null}"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
@@ -913,6 +915,7 @@
                 <ControlTemplate TargetType="controls:FieldComboBox">
                     <Grid SnapsToDevicePixels="True">
                         <ToggleButton Focusable="False" Style="{x:Null}"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
@@ -1017,6 +1020,7 @@
                 <ControlTemplate TargetType="{x:Type controls:MultiSelectDropdown}">
                     <Grid SnapsToDevicePixels="True">
                         <ToggleButton x:Name="PART_ToggleButton" Focusable="True" Style="{x:Null}"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press" FocusVisualStyle="{x:Null}">
                             <ToggleButton.Template>
@@ -1150,6 +1154,7 @@
                 <ControlTemplate TargetType="{x:Type controls:MultiSelectDropdown}">
                     <Grid SnapsToDevicePixels="True">
                         <ToggleButton x:Name="PART_ToggleButton" Focusable="True" Style="{x:Null}"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press" FocusVisualStyle="{x:Null}">
                             <ToggleButton.Template>
@@ -1420,6 +1425,7 @@
                 <ControlTemplate TargetType="controls:FieldComboBox">
                     <Grid SnapsToDevicePixels="True">
                         <ToggleButton Focusable="False" Style="{x:Null}"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
