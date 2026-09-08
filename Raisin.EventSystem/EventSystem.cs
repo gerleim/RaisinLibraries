@@ -92,23 +92,44 @@ public class EventSystem : IDisposable
         Subscribe(subscriber, GetKey(eventArgs), filter);
     }
 
+    /// <summary>
+    /// Subscribes, stating which thread the callbacks belong on rather than inheriting it from the
+    /// ambient <see cref="SynchronizationContext"/> and from whichever producer raises the event.
+    /// </summary>
+    public void Subscribe<T>(IEventSubscriber<T> subscriber, DispatchClass dispatchClass,
+        Func<T, bool>? filter = null) where T : EventSystemEventArgs
+    {
+        Subscribe(subscriber, GetKey<T>(), filter, dispatchClass);
+    }
+
+    /// <inheritdoc cref="Subscribe{T}(IEventSubscriber{T}, DispatchClass, Func{T, bool}?)"/>
+    public void SubscribeAll(object subscriber, DispatchClass dispatchClass)
+    {
+        SubscribeAllCore(subscriber, dispatchClass);
+    }
+
     private MethodInfo _subscribeMethod;
+    private MethodInfo _subscribeWithClassMethod;
     private MethodInfo _destroyMethod;
 
-    [MemberNotNull(nameof(_subscribeMethod))]
+    [MemberNotNull(nameof(_subscribeMethod), nameof(_subscribeWithClassMethod))]
     private void SetSubscribeMethod()
     {
-        _subscribeMethod = typeof(EventSystem)
+        var candidates = typeof(EventSystem)
             .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Where(m => m.Name == "Subscribe")
             .Where(m => m.IsGenericMethodDefinition)
-            .First(m =>
+            .Where(m =>
             {
-                var parameters = m.GetParameters();
-                return parameters.Length == 1 &&
-                        parameters[0].ParameterType.IsGenericType &&
-                        parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(IEventSubscriber<>);
-            });
+                var first = m.GetParameters().FirstOrDefault()?.ParameterType;
+                return first is { IsGenericType: true } &&
+                       first.GetGenericTypeDefinition() == typeof(IEventSubscriber<>);
+            })
+            .ToList();
+
+        _subscribeMethod = candidates.First(m => m.GetParameters().Length == 1);
+        _subscribeWithClassMethod = candidates.First(m =>
+            m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType == typeof(DispatchClass));
     }
 
     [MemberNotNull(nameof(_destroyMethod))]
@@ -127,7 +148,9 @@ public class EventSystem : IDisposable
             });
     }
 
-    public void SubscribeAll(object subscriber)
+    public void SubscribeAll(object subscriber) => SubscribeAllCore(subscriber, null);
+
+    private void SubscribeAllCore(object subscriber, DispatchClass? dispatchClass)
     {
         var interfaces = subscriber.GetType()
             .GetInterfaces()
@@ -136,8 +159,15 @@ public class EventSystem : IDisposable
         foreach (var iface in interfaces)
         {
             var eventType = iface.GetGenericArguments()[0];
-            var methodGeneric = _subscribeMethod!.MakeGenericMethod(eventType);
-            methodGeneric.Invoke(this, [subscriber]);
+            if (dispatchClass is null)
+            {
+                _subscribeMethod!.MakeGenericMethod(eventType).Invoke(this, [subscriber]);
+            }
+            else
+            {
+                _subscribeWithClassMethod!.MakeGenericMethod(eventType)
+                    .Invoke(this, [subscriber, dispatchClass.Value, null]);
+            }
         }
     }
 
@@ -160,14 +190,16 @@ public class EventSystem : IDisposable
     /// UI thread receive their <c>ExecuteEvent</c> callbacks auto-marshalled to the UI thread.
     /// No manual Dispatcher check (RunOnUI/EnsureUIThread) is needed inside ExecuteEvent methods.
     /// </summary>
-    private void Subscribe<T>(IEventSubscriber<T> subscriber, string key, Func<T, bool>? filter = null) where T : EventSystemEventArgs
+    private void Subscribe<T>(IEventSubscriber<T> subscriber, string key, Func<T, bool>? filter = null,
+        DispatchClass? dispatchClass = null) where T : EventSystemEventArgs
     {
         var context = SynchronizationContext.Current;
 
         // UI-bound subscribers (INotifyPropertyChanged) should subscribe on the UI thread
         // so that SynchronizationContext is captured for auto-marshalling.
         // Fires OnWarning in production (wired in IBApp); silent in test environments.
-        if (context is null && subscriber is INotifyPropertyChanged)
+        // A subscriber that states its class has answered this question and is not warned about.
+        if (context is null && dispatchClass is null && subscriber is INotifyPropertyChanged)
         {
             OnWarning?.Invoke($"EventSystem: {subscriber.GetType().Name} subscribes to {typeof(T).Name} " +
                               "without a SynchronizationContext. UI subscribers must subscribe on the UI thread.");
@@ -178,14 +210,14 @@ public class EventSystem : IDisposable
             {
                 var handler = new EventHandler<T>();
                 handler.OnError = OnError;
-                handler.Add(subscriber, context, filter);
+                handler.Add(subscriber, context, filter, dispatchClass);
                 return handler;
             },
             (_, existing) =>
             {
                 var handlerT = (EventHandler<T>)existing;
                 handlerT.OnError = OnError;
-                handlerT.Add(subscriber, context, filter);
+                handlerT.Add(subscriber, context, filter, dispatchClass);
                 return existing;
             });
     }

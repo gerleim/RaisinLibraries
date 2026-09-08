@@ -5,7 +5,8 @@ public class EventHandler<T> : IEventHandler where T : EventSystemEventArgs
     private readonly record struct Entry(
         IEventSubscriber<T> Subscriber,
         SynchronizationContext? Context,
-        Func<T, bool>? Filter);
+        Func<T, bool>? Filter,
+        DispatchClass? Class = null);
 
     private readonly List<Entry> _subscribers = new();
     private readonly object _sync = new();
@@ -13,11 +14,12 @@ public class EventHandler<T> : IEventHandler where T : EventSystemEventArgs
 
     internal Action<Exception>? OnError { get; set; }
 
-    public void Add(IEventSubscriber<T> subscriber, SynchronizationContext? context, Func<T, bool>? filter = null)
+    public void Add(IEventSubscriber<T> subscriber, SynchronizationContext? context, Func<T, bool>? filter = null,
+        DispatchClass? dispatchClass = null)
     {
         lock (_sync)
         {
-            _subscribers.Add(new(subscriber, context, filter));
+            _subscribers.Add(new(subscriber, context, filter, dispatchClass));
             _snapshot = [.. _subscribers];
         }
     }
@@ -49,10 +51,37 @@ public class EventHandler<T> : IEventHandler where T : EventSystemEventArgs
                 if (entry.Filter != null && !entry.Filter(eventArgs))
                     continue;
 
-                if (entry.Context != null)
-                    entry.Context.Post(_ => entry.Subscriber.ExecuteEvent(sender, eventArgs), null);
-                else
-                    entry.Subscriber.ExecuteEvent(sender, eventArgs);
+                switch (entry.Class)
+                {
+                    // Declared: the subscriber said where it wants to run, and the producer's choice
+                    // of Invoke or InvokeOnThreadPool no longer decides it.
+                    case DispatchClass.State:
+                        entry.Subscriber.ExecuteEvent(sender, eventArgs);
+                        break;
+                    case DispatchClass.Pool:
+                        var poolEntry = entry;
+                        Task.Run(() =>
+                        {
+                            try { poolEntry.Subscriber.ExecuteEvent(sender, eventArgs); }
+                            catch (Exception ex) { OnError?.Invoke(ex); }
+                        });
+                        break;
+                    case DispatchClass.Notify:
+                        if (entry.Context is null)
+                            throw new InvalidOperationException(
+                                $"{entry.Subscriber.GetType().Name} subscribed to {typeof(T).Name} as " +
+                                $"{nameof(DispatchClass.Notify)} without a SynchronizationContext.");
+                        entry.Context.Post(_ => entry.Subscriber.ExecuteEvent(sender, eventArgs), null);
+                        break;
+
+                    // Undeclared: whatever this subscriber has always done.
+                    default:
+                        if (entry.Context != null)
+                            entry.Context.Post(_ => entry.Subscriber.ExecuteEvent(sender, eventArgs), null);
+                        else
+                            entry.Subscriber.ExecuteEvent(sender, eventArgs);
+                        break;
+                }
             }
             catch (Exception ex)
             {
