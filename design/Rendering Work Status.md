@@ -161,11 +161,11 @@ not to build its section C without re-reading the bottom of the note; that warni
 
 ---
 
-## Files moved to `done/`
+## Files moved to `_done/`
 
 Complete, implemented, or describing an architecture that no longer exists.
 
-**`RaisinDocs/design/done/`**
+**`RaisinDocs/design/_done/`**
 - `Opaque Line Visuals.md` - all five phases shipped
 - `Typing Performance.md` - merged `d2a75a1`
 - `Scroll Pre-Buffering.md` - phases 1-3 done, phase 4 written off
@@ -173,7 +173,7 @@ Complete, implemented, or describing an architecture that no longer exists.
 These three are cited from source comments and from `CLAUDE.md`; every citation was rewritten to the
 new path.
 
-**`RaisinTerminal/design/done/`**
+**`RaisinTerminal/design/_done/`**
 - `RT2-Minimap-Scrollbar-Simplification.md` - verified: all three loops gone
 - `scroll-mechanisms-code-review.md` - every fix checked off, and the scroll path has since been
   rewritten past the code it reviewed
@@ -182,7 +182,7 @@ new path.
 - `Scrolling-Architecture-and-Evolution.md` - describes the split-offset model and the separate
   minimap animation loop, neither of which exists any more
 
-**`RaisinTerminal/design/RenderingAndScrolling/done/`**
+**`RaisinTerminal/design/RenderingAndScrolling/_done/`**
 - `01-Requirements.md` through `05-PlannedArchitecture.md` - the rewrite they plan is in the code
 
 **Kept in place despite being answered:** `RaisinDocs/design/Scroll Frame Pacing.md`. It is the
