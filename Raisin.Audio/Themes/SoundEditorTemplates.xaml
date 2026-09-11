@@ -1,0 +1,196 @@
+<!--
+    The three setting rows the sound pickers need, on top of the shared editors in
+    Raisin.WPF.Base. Merge this dictionary and hand the three templates to a
+    SoundSettingTemplateSelector.
+
+    SettingsEditorTemplates is merged here rather than left to the consumer, because these rows
+    use SettingRowBorder and SettingsResetButton from it and a consumer that forgot would fail
+    at load rather than degrade.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:audio="clr-namespace:Raisin.Audio">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/Raisin.WPF.Base;component/Themes/SettingsEditorTemplates.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <BooleanToVisibilityConverter x:Key="SoundBoolToVisibility"/>
+
+    <!-- Play icon, filled rather than stroked, on the same 16-unit grid as the toolbar glyphs.
+         BasedOn is not optional: an explicit keyed style replaces the implicit one outright, so
+         without it this button falls back to default Aero chrome and renders light grey on a
+         dark pane - the same trap SettingsResetButton fell into. The glyph takes the button's
+         own Foreground so it dims with the rest of the chrome when the row is silent and the
+         button is disabled. -->
+    <Style x:Key="SoundPreviewButton" TargetType="Button"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Width" Value="26"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="6,0,0,0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <!-- A ContentTemplate, not a Content setter: one Path element cannot be the child of
+             several buttons, and a template is instantiated per use. -->
+        <Setter Property="Content" Value=""/>
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Path Width="11" Height="11" Stretch="Uniform"
+                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                          Data="{x:Static audio:SoundIcons.PlayData}"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The speakers take their colour from the list they sit in rather than a named brush.
+         A StaticResource here would have to name a palette key, and this dictionary is merged
+         into apps that theme themselves differently - one of them would fail at load. -->
+    <Style x:Key="SoundSpeakerGlyph" TargetType="Path">
+        <Setter Property="Width" Value="13"/>
+        <Setter Property="Height" Value="13"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Opacity" Value="0.55"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="StrokeThickness" Value="1.3"/>
+        <Setter Property="StrokeLineJoin" Value="Round"/>
+        <Setter Property="Stroke"
+                Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
+    </Style>
+
+    <!-- The label block every row shares: name, greyed key, wrapped description. -->
+    <DataTemplate x:Key="SoundRowHeaderTemplate">
+        <StackPanel>
+            <DockPanel>
+                <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontSize="10"
+                           Opacity="0.4" VerticalAlignment="Center" Margin="8,0,0,0"
+                           DockPanel.Dock="Right"/>
+                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.6"
+                       FontSize="11" Margin="0,2,0,0"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Volume: a slider between two speakers, with the value spelled out and a play button so
+         it can be judged by ear rather than by number. -->
+    <DataTemplate x:Key="VolumeSettingTemplate" DataType="{x:Type audio:VolumeSettingItem}">
+        <Border Style="{StaticResource SettingRowBorder}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
+                        Command="{Binding ResetCommand}"/>
+                <StackPanel>
+                    <ContentPresenter ContentTemplate="{StaticResource SoundRowHeaderTemplate}"
+                                      Content="{Binding}"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <Path Style="{StaticResource SoundSpeakerGlyph}"
+                              Data="{x:Static audio:SoundIcons.SpeakerQuietData}"/>
+
+                        <Slider Value="{Binding Value}"
+                                Minimum="{Binding Min}" Maximum="{Binding Max}"
+                                SmallChange="0.05" LargeChange="0.1"
+                                TickFrequency="0.05" IsSnapToTickEnabled="True"
+                                Width="220" Margin="8,0,0,0" VerticalAlignment="Center"/>
+
+                        <Path Style="{StaticResource SoundSpeakerGlyph}" Margin="8,0,0,0"
+                              Data="{x:Static audio:SoundIcons.SpeakerLoudData}"/>
+
+                        <TextBlock Text="{Binding Percent}" Width="42" Margin="10,0,0,0"
+                                   TextAlignment="Right" VerticalAlignment="Center"
+                                   FontFamily="Consolas" Opacity="0.8"/>
+
+                        <Button Command="{Binding PreviewCommand}"
+                                ToolTip="Play a sound at this volume"
+                                Style="{StaticResource SoundPreviewButton}"/>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Voice: a dropdown whose entries mean nothing until heard, so it carries its own
+         test button. -->
+    <DataTemplate x:Key="VoiceSettingTemplate" DataType="{x:Type audio:SpeechVoiceSettingItem}">
+        <Border Style="{StaticResource SettingRowBorder}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
+                        Command="{Binding ResetCommand}"/>
+                <StackPanel>
+                    <ContentPresenter ContentTemplate="{StaticResource SoundRowHeaderTemplate}"
+                                      Content="{Binding}"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <ComboBox ItemsSource="{Binding Choices}"
+                                  SelectedItem="{Binding SelectedValue}"
+                                  Width="240" VerticalAlignment="Center"/>
+
+                        <Button Command="{Binding PreviewCommand}"
+                                ToolTip="Hear this voice"
+                                Style="{StaticResource SoundPreviewButton}"/>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Sound picker: pick a source, then a value that follows it. The value control swaps to a
+         path box with Browse only for a custom file, and to two phrase boxes for spoken text. -->
+    <DataTemplate x:Key="SoundSettingTemplate" DataType="{x:Type audio:SoundSettingItem}">
+        <Border Style="{StaticResource SettingRowBorder}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Style="{StaticResource SettingsResetButton}"
+                        Command="{Binding ResetCommand}"/>
+                <StackPanel>
+                    <ContentPresenter ContentTemplate="{StaticResource SoundRowHeaderTemplate}"
+                                      Content="{Binding}"/>
+
+                    <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <ComboBox ItemsSource="{Binding Sources}"
+                                  SelectedItem="{Binding SelectedSource}"
+                                  Width="110" VerticalAlignment="Center"/>
+
+                        <ComboBox ItemsSource="{Binding Values}"
+                                  SelectedItem="{Binding SelectedValue}"
+                                  IsEditable="False"
+                                  Width="170" Margin="6,0,0,0" VerticalAlignment="Center"
+                                  Visibility="{Binding HasValueList, Converter={StaticResource SoundBoolToVisibility}}"/>
+
+                        <TextBox Text="{Binding SelectedValue, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="230" Margin="6,0,0,0" VerticalAlignment="Center"
+                                 Visibility="{Binding IsFileSource, Converter={StaticResource SoundBoolToVisibility}}"/>
+
+                        <Button Content="Browse..." Command="{Binding BrowseCommand}"
+                                Padding="8,2" Margin="6,0,0,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsFileSource, Converter={StaticResource SoundBoolToVisibility}}"/>
+
+                        <!-- Spoken text: one wording for a single one, one for a batch. Stored
+                             as a single spec, split into two boxes here because that is how it
+                             is thought about. -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                    Visibility="{Binding IsSpeechSource, Converter={StaticResource SoundBoolToVisibility}}">
+                            <TextBlock Text="one:" Opacity="0.6" VerticalAlignment="Center"
+                                       Margin="6,0,4,0"/>
+                            <TextBox Text="{Binding SpokenSingular, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="190" VerticalAlignment="Center"
+                                     ToolTip="Said when one thing raised this. Placeholders are named by the app; {subject} always works."/>
+                            <TextBlock Text="several:" Opacity="0.6" VerticalAlignment="Center"
+                                       Margin="8,0,4,0"/>
+                            <TextBox Text="{Binding SpokenPlural, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="190" VerticalAlignment="Center"
+                                     ToolTip="Said when several were collected together. {count} is how many. Blank says each one separately."/>
+                        </StackPanel>
+
+                        <Button Command="{Binding PreviewCommand}"
+                                IsEnabled="{Binding CanPreview}"
+                                ToolTip="Play this sound"
+                                Style="{StaticResource SoundPreviewButton}"/>
+                    </WrapPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </DataTemplate>
+
+</ResourceDictionary>

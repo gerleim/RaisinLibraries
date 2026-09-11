@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- MediaPlayer and the setting-row DataTemplates both need WPF. -->
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Raisin.Audio</RootNamespace>
+
+    <PackageId>Raisin.Audio</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>gerleim</Authors>
+    <Description>Shared notification sound engine — themed sound specs, playback, speech, and the settings editors that configure them</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/gerleim/RaisinLibraries</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gerleim/RaisinLibraries</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Raisin.Audio.Tests" />
+  </ItemGroup>
+
+  <!--
+    Sound themes: one subfolder per theme, every theme carrying the same event names.
+    Linked to Sounds\ because that is where SoundResolver.BundledSoundsFolder looks.
+    Content flows to the output of anything referencing this project, so a consuming app
+    needs no glob of its own; PackageCopyToOutput carries the same behaviour through the
+    NuGet path, which is how RaisinTerminal2 builds its releases.
+  -->
+  <ItemGroup>
+    <Content Include="BundledSounds\**\*.mp3" Link="Sounds\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>contentFiles\any\any\Sounds\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Speech" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseProjectReferences)' != 'false'">
+    <ProjectReference Include="..\Raisin.Core\Raisin.Core.csproj" />
+    <ProjectReference Include="..\Raisin.WPF.Base\Raisin.WPF.Base.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+    <PackageReference Include="Raisin.Core" Version="2.0.0" />
+    <PackageReference Include="Raisin.WPF.Base" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
